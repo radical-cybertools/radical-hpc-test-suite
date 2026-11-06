@@ -339,7 +339,7 @@ def main():
                         help="a machine to show as a grey 'not connected' card")
     parser.add_argument("--datasource", required=True, help="Infinity data source UID")
     parser.add_argument("--uid", default="dashboard-spike")
-    parser.add_argument("--title", default="HPC Monthly Test Suite")
+    parser.add_argument("--title", default="RADICAL-Cybertools Cross-HPC Test Dashboard")
     parser.add_argument("--out", type=pathlib.Path)
     parser.add_argument("--push", metavar="STACK_URL")
     parser.add_argument("--token-file", default="~/.hpc-monitor-grafana/grafana.token")

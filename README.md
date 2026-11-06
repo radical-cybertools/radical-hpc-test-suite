@@ -2,6 +2,8 @@
 
 Tests each new RHAPSODY release once a month on our HPC machines, and publishes the results to the `results` branch of this repo, which a public Grafana dashboard reads.
 
+For the design constraints and why it's built this way, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
 ## How it works
 
 ```
@@ -52,7 +54,7 @@ Each run installs `rhapsody-py[dragon]==<version>` from PyPI in its own venv, wi
 ## Commands
 
 ```bash
-# Scheduled command; safe to run by hand
+# Scheduled command. By hand, it can start a due run and publish results
 python3 hpc_monitor.py tick --site sites/stellar-ai/site.toml
 
 # Test a chosen version now: a baseline or a rerun. A rerun gets a new row.
@@ -62,7 +64,7 @@ python3 hpc_monitor.py run --site sites/stellar-ai/site.toml --version 0.6.0
 python3 hpc_monitor.py run --site sites/stellar-ai/site.toml --version 0.6.0 --dry-run
 ```
 
-It needs Python 3.11 or newer and has no other dependencies. Run the tests with `python3 -m unittest discover -s tests`. They're offline, using fake SLURM commands and a local git repo.
+The monitor needs Python 3.11 or newer and has no other dependencies. Dragon needs the `python` set in `site.toml` to be 3.11 to 3.13. `HPC_MONITOR_HOME` moves the state folder, but not the deploy key. Run the tests with `python3 -m unittest discover -s tests`. They're offline, using fake SLURM commands and a local git repo.
 
 ## What gets published
 
