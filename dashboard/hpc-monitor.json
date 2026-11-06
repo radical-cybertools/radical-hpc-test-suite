@@ -369,18 +369,17 @@
      "id": "organize",
      "options": {
       "excludeByName": {
+       "last_reported": true,
        "ended_at": true,
+       "test": true,
        "dragon_version": true,
+       "run_id": true,
+       "passed": true,
+       "software": true,
+       "nodes": true,
        "failed": true,
        "skipped": true,
-       "last_reported": true,
-       "passed": true,
        "duration_min": true,
-       "test": true,
-       "run_id": true,
-       "details": true,
-       "nodes": true,
-       "software": true,
        "error": true
       },
       "indexByName": {
@@ -523,12 +522,24 @@
      {
       "matcher": {
        "id": "byName",
+       "options": "slurm_job_id"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 110
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
        "options": "test"
       },
       "properties": [
        {
         "id": "custom.width",
-        "value": 300
+        "value": 360
        },
        {
         "id": "custom.cellOptions",
@@ -546,31 +557,11 @@
       },
       "properties": [
        {
-        "id": "custom.width",
-        "value": 560
-       },
-       {
         "id": "custom.cellOptions",
         "value": {
          "type": "auto",
          "wrapText": true
         }
-       }
-      ]
-     },
-     {
-      "matcher": {
-       "id": "byName",
-       "options": "details"
-      },
-      "properties": [
-       {
-        "id": "displayName",
-        "value": "full output (hover, then click the eye)"
-       },
-       {
-        "id": "custom.inspect",
-        "value": true
        }
       ]
      },
@@ -1243,25 +1234,24 @@
      "id": "organize",
      "options": {
       "excludeByName": {
+       "status": true,
        "ended_at": true,
-       "machine": true,
-       "version": true,
+       "test": true,
        "dragon_version": true,
+       "run_id": true,
+       "passed": true,
        "failure_summary": true,
+       "slurm_job_id": true,
+       "version": true,
+       "submitted_at": true,
+       "software": true,
+       "slurm_state": true,
+       "details_url": true,
+       "machine": true,
+       "nodes": true,
        "failed": true,
        "skipped": true,
-       "details_url": true,
-       "passed": true,
        "duration_min": true,
-       "slurm_job_id": true,
-       "test": true,
-       "run_id": true,
-       "submitted_at": true,
-       "details": true,
-       "slurm_state": true,
-       "nodes": true,
-       "software": true,
-       "status": true,
        "error": true
       },
       "indexByName": {
@@ -1416,22 +1406,21 @@
      "id": "organize",
      "options": {
       "excludeByName": {
-       "ended_at": true,
-       "machine": true,
-       "dragon_version": true,
-       "failure_summary": true,
        "last_reported": true,
-       "details_url": true,
-       "duration_min": true,
-       "slurm_job_id": true,
-       "test": true,
-       "run_id": true,
-       "submitted_at": true,
-       "details": true,
-       "slurm_state": true,
-       "nodes": true,
-       "software": true,
        "status": true,
+       "ended_at": true,
+       "test": true,
+       "dragon_version": true,
+       "run_id": true,
+       "failure_summary": true,
+       "slurm_job_id": true,
+       "submitted_at": true,
+       "software": true,
+       "slurm_state": true,
+       "details_url": true,
+       "machine": true,
+       "nodes": true,
+       "duration_min": true,
        "error": true
       },
       "indexByName": {
@@ -1646,24 +1635,23 @@
      "id": "organize",
      "options": {
       "excludeByName": {
+       "last_reported": true,
+       "status": true,
        "ended_at": true,
-       "machine": true,
+       "test": true,
        "dragon_version": true,
+       "run_id": true,
+       "passed": true,
        "failure_summary": true,
+       "slurm_job_id": true,
+       "submitted_at": true,
+       "software": true,
+       "slurm_state": true,
+       "details_url": true,
+       "machine": true,
+       "nodes": true,
        "failed": true,
        "skipped": true,
-       "last_reported": true,
-       "details_url": true,
-       "passed": true,
-       "slurm_job_id": true,
-       "test": true,
-       "run_id": true,
-       "submitted_at": true,
-       "details": true,
-       "slurm_state": true,
-       "nodes": true,
-       "software": true,
-       "status": true,
        "error": true
       },
       "indexByName": {
@@ -1842,15 +1830,14 @@
      "id": "organize",
      "options": {
       "excludeByName": {
-       "ended_at": true,
-       "machine": true,
        "last_reported": true,
-       "duration_min": true,
+       "ended_at": true,
        "test": true,
        "run_id": true,
-       "details": true,
-       "nodes": true,
        "software": true,
+       "machine": true,
+       "nodes": true,
+       "duration_min": true,
        "error": true
       },
       "indexByName": {
@@ -1996,12 +1983,24 @@
      {
       "matcher": {
        "id": "byName",
+       "options": "slurm_job_id"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 110
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
        "options": "test"
       },
       "properties": [
        {
         "id": "custom.width",
-        "value": 300
+        "value": 360
        },
        {
         "id": "custom.cellOptions",
@@ -2019,31 +2018,11 @@
       },
       "properties": [
        {
-        "id": "custom.width",
-        "value": 560
-       },
-       {
         "id": "custom.cellOptions",
         "value": {
          "type": "auto",
          "wrapText": true
         }
-       }
-      ]
-     },
-     {
-      "matcher": {
-       "id": "byName",
-       "options": "details"
-      },
-      "properties": [
-       {
-        "id": "displayName",
-        "value": "full output (hover, then click the eye)"
-       },
-       {
-        "id": "custom.inspect",
-        "value": true
        }
       ]
      },
@@ -2150,11 +2129,6 @@
        "type": "string"
       },
       {
-       "selector": "details",
-       "text": "details",
-       "type": "string"
-      },
-      {
        "selector": "details_url",
        "text": "details_url",
        "type": "string"
@@ -2189,29 +2163,28 @@
      "id": "organize",
      "options": {
       "excludeByName": {
+       "last_reported": true,
+       "status": true,
        "ended_at": true,
-       "machine": true,
        "dragon_version": true,
+       "run_id": true,
+       "passed": true,
        "failure_summary": true,
+       "submitted_at": true,
+       "software": true,
+       "slurm_state": true,
+       "machine": true,
+       "nodes": true,
        "failed": true,
        "skipped": true,
-       "last_reported": true,
-       "passed": true,
-       "duration_min": true,
-       "run_id": true,
-       "submitted_at": true,
-       "slurm_state": true,
-       "nodes": true,
-       "software": true,
-       "status": true
+       "duration_min": true
       },
       "indexByName": {
        "version": 0,
        "slurm_job_id": 1,
        "test": 2,
        "error": 3,
-       "details": 4,
-       "details_url": 5
+       "details_url": 4
       },
       "renameByName": {}
      }
@@ -2343,12 +2316,24 @@
      {
       "matcher": {
        "id": "byName",
+       "options": "slurm_job_id"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 110
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
        "options": "test"
       },
       "properties": [
        {
         "id": "custom.width",
-        "value": 300
+        "value": 360
        },
        {
         "id": "custom.cellOptions",
@@ -2366,31 +2351,11 @@
       },
       "properties": [
        {
-        "id": "custom.width",
-        "value": 560
-       },
-       {
         "id": "custom.cellOptions",
         "value": {
          "type": "auto",
          "wrapText": true
         }
-       }
-      ]
-     },
-     {
-      "matcher": {
-       "id": "byName",
-       "options": "details"
-      },
-      "properties": [
-       {
-        "id": "displayName",
-        "value": "full output (hover, then click the eye)"
-       },
-       {
-        "id": "custom.inspect",
-        "value": true
        }
       ]
      },

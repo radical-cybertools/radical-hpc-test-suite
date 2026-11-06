@@ -24,8 +24,7 @@ COLUMNS = (
     "dragon_version", "submitted_at", "ended_at", "details_url", "last_reported",
 )
 FAILURE_COLUMNS = (
-    "run_id", "machine", "version", "slurm_job_id", "test", "error", "details", "details_url",
-    "submitted_at",
+    "run_id", "machine", "version", "slurm_job_id", "test", "error", "details_url", "submitted_at",
 )
 NUMBERS = {"passed", "failed", "skipped", "duration_min"}
 TIMES = {"submitted_at", "ended_at", "last_reported"}
@@ -99,12 +98,10 @@ def table_fields():
         override("passed", ("custom.width", 70)),
         override("failed", ("custom.width", 70)),
         override("skipped", ("custom.width", 70)),
-        override("test", ("custom.width", 300),
+        override("slurm_job_id", ("custom.width", 110)),
+        override("test", ("custom.width", 360),
                  ("custom.cellOptions", {"type": "auto", "wrapText": True})),
-        override("error", ("custom.width", 560),
-                 ("custom.cellOptions", {"type": "auto", "wrapText": True})),
-        override("details", ("displayName", "full output (hover, then click the eye)"),
-                 ("custom.inspect", True)),
+        override("error", ("custom.cellOptions", {"type": "auto", "wrapText": True})),
         override("details_url", ("displayName", "logs"), ("custom.width", 70),
                  ("links", [{"title": "Open logs and JUnit", "url": "${__value.raw}",
                              "targetBlank": True}]),
@@ -210,7 +207,7 @@ def build(machines, datasource, uid, title):
                 "table", f"{name}: failed tests with their errors, newest first",
                 0, y + 16, 24, 10, [builder.query("A", failures_source(source), FAILURE_COLUMNS)],
                 transformations=[newest_first(), keep(
-                    "version", "slurm_job_id", "test", "error", "details", "details_url")],
+                    "version", "slurm_job_id", "test", "error", "details_url")],
                 fieldConfig=table_fields(),
             ),
         ]

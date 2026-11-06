@@ -32,8 +32,7 @@ A status change appears within about 25 minutes: up to 15 for the next tick, abo
 |---|---|
 | "why it failed" column | One line: the first failed test and how many more |
 | "failed tests" table in the machine's section | Every failed test with its error |
-| Eye icon on that table's full output cell | The traceback or the end of the log |
-| `logs` link | The run's folder: `junit.xml`, `log_tail.txt`, a log per failed file, `summary.json` |
+| `logs` link | The run's folder: tracebacks in `junit.xml`, job output in `log_tail.txt` and a log per failed file, plus `summary.json` |
 
 **If a machine stops reporting,** its rows keep their last status. Check "Last report" in its section: an idle machine updates that once a day.
 

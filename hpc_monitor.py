@@ -56,12 +56,10 @@ COLUMNS = (
     "dragon_version", "submitted_at", "ended_at", "details_url", "last_reported",
 )
 FAILURE_COLUMNS = (
-    "run_id", "machine", "version", "slurm_job_id", "test", "error", "details", "details_url",
-    "submitted_at",
+    "run_id", "machine", "version", "slurm_job_id", "test", "error", "details_url", "submitted_at",
 )
 MAX_SUMMARY_CHARS = 300
 MAX_ERROR_CHARS = 2000
-MAX_DETAILS_CHARS = 8000
 MAX_JUNIT_BYTES = 5 * 1024 * 1024
 LOG_TAIL_LINES = 200
 PUSH_ATTEMPTS = 4
@@ -633,10 +631,8 @@ class Monitor:
         for test in verdict["failed_tests"]:
             output = scrub(test["output"]).strip()
             message = scrub(test.get("message", "")).strip() or output.partition("\n")[0]
-            rows.append(common | {"test": test["name"], "error": message[:MAX_ERROR_CHARS],
-                                  "details": output[-MAX_DETAILS_CHARS:]})
-        return rows or [common | {"test": "(whole run)", "error": verdict["summary"],
-                                  "details": ""}]
+            rows.append(common | {"test": test["name"], "error": message[:MAX_ERROR_CHARS]})
+        return rows or [common | {"test": "(whole run)", "error": verdict["summary"]}]
 
     def write_failures(self, path):
         """Rebuild this machine's failures, keeping runs that lost state no longer knows."""
@@ -650,7 +646,8 @@ class Monitor:
         rows.sort(key=lambda r: r["submitted_at"])
         path.parent.mkdir(parents=True, exist_ok=True)
         with open(path, "w", newline="") as handle:
-            writer = csv.DictWriter(handle, FAILURE_COLUMNS, lineterminator="\n")
+            writer = csv.DictWriter(handle, FAILURE_COLUMNS, extrasaction="ignore",
+                                    lineterminator="\n")
             writer.writeheader()
             writer.writerows(rows)
 

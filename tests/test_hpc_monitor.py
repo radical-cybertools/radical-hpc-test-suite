@@ -548,7 +548,6 @@ class Publishing(Base):
         rows = self.failures(clone)
         self.assertEqual([r["test"] for r in rows], ["t.b"])
         self.assertEqual(rows[0]["error"], "TimeoutError: 0/1 tasks")
-        self.assertIn("trace", rows[0]["details"])
 
     def test_passing_run_publishes_no_failures(self):
         self.finished_run("COMPLETED", ALL_PASS)
