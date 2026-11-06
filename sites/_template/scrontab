@@ -1,0 +1,14 @@
+# Monitor schedule for <machine>. Use the mode spike/probe_network.sbatch showed works.
+#SCRON --account=<account>
+#SCRON --partition=<partition>
+#SCRON --qos=<short qos>
+#SCRON --nodes=1
+#SCRON --ntasks=1
+#SCRON --time=00:10:00
+#SCRON --job-name=hpc-monitor-tick
+#SCRON --output=<home>/.hpc-monitor-scron.out
+#SCRON --open-mode=append
+# Direct mode, if the job can reach the internet:
+*/15 * * * * python3 <repo>/hpc_monitor.py tick --site <repo>/sites/<machine>/site.toml
+# SSH mode, if only the login node can. Use this line instead of the one above:
+# */15 * * * * ssh -o BatchMode=yes <login-host> 'python3 <repo>/hpc_monitor.py tick --site <repo>/sites/<machine>/site.toml'

@@ -1,0 +1,25 @@
+# Copy this directory to sites/<machine>/ and fill in the values. See sites/README.md.
+
+machine = "<machine>"  # shown as the site on the dashboard
+venv = "<absolute path to the Python environment>"
+setup = []  # shell lines to run before pip, e.g. "module load python"
+
+[cdash]
+project = "RADICAL-HPC-Test-Suite"
+track = "Experimental"
+
+[archive]
+enabled = false
+repo = "git@github.com:radical-cybertools/radical-hpc-test-suite.git"
+branch = "results"
+ssh_key = "~/.hpc-monitor/deploy_key"
+
+[[run]]
+name = "rhapsody-dragon"  # dashboard row; keep stable so releases can be compared
+package = "rhapsody-py"
+job_script = "dragon_suite.sbatch"
+# Temporary, until a release pins Dragon 0.15.0: code and tests from one RHAPSODY commit.
+source_tag = "main"
+install = "{source_dir}[dragon]"
+extra_packages = ["pytest", "pytest-asyncio", "mpi4py"]
+require_versions = { dragonhpc = "0.15.0" }
