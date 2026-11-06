@@ -105,19 +105,7 @@ The schedule and the jobs run the code from this checkout, so keep it on this br
 
 ## Adding a machine
 
-1. Copy `sites/_template/` to `sites/<machine>/` and fill it in.
-2. Check the job script: `sbatch --test-only sites/<machine>/dragon_suite.sbatch`
-3. Preview with `run --version <version> --dry-run`, then run a baseline without `--dry-run`.
-4. Add a read-write deploy key for that machine to this repo.
-5. Install the schedule. `scrontab <file>` replaces the whole table, so merge any existing entries first.
-6. Rebuild the dashboard with one more `--machine`:
-   ```bash
-   python3 dashboard/build_dashboard.py --datasource <uid> --out dashboard/hpc-monitor.json \
-       --planned <machine not connected yet> \
-       --machine StellarAI=https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai.csv \
-       --machine <display name>=https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/<machine>.csv
-   ```
-   The name before `=` is what the dashboard shows. Import the JSON in Grafana, then create or keep its public link.
+Follow [docs/adding-a-machine.md](docs/adding-a-machine.md).
 
 ## Troubleshooting
 
