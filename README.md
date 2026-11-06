@@ -31,8 +31,10 @@ A status change appears within about 25 minutes: up to 15 for the next tick, abo
 | Where | What it shows |
 |---|---|
 | "why it failed" column | One line: the first failed test and how many more |
-| "all tests" table in the machine's section | Every test that ran, with its result and any error or skip reason, newest run first and failures first |
+| The machine's section | One row per run, with its results and resource use; click its arrow for every test that ran, with its result, time, and any error or skip reason, failures first |
 | `logs` link | The run's folder: tracebacks in `junit.xml`, job output in `log_tail.txt` and a log per failed file, plus `summary.json` |
+
+**Resource use** comes from `sacct` once a job ends: CPU use as a share of the allocation, and peak memory as the largest single task. GPU use isn't shown, because SLURM reported 0 for it on the steps checked. Per-file numbers match SLURM steps to each file's log times, so treat them as close, not exact.
 
 **If a machine stops reporting,** its rows keep their last status. Check "Last report" in its section: an idle machine updates that once a day.
 
@@ -69,7 +71,8 @@ Everything goes in `data/` on the `results` branch. That branch holds only data,
 | Path | Contents |
 |---|---|
 | `data/<machine>.csv` | One row per run |
-| `data/<machine>-tests.csv` | One row per test in each finished run, with its result and any error or skip reason |
+| `data/<machine>-tests.csv` | One row per test in each finished run, with its result, time, and any error or skip reason |
+| `data/<machine>-usage.csv` | CPU and peak memory per test file, from `sacct` |
 | `data/runs/<machine>/<software>/<version>/<job>/` | `junit.xml`, `log_tail.txt`, `<file>.log` for each failed file, `summary.json` |
 
 Everything published is public. Logs are scrubbed of usernames, home paths, and secret-looking values, but the scrubbing is pattern-based, so don't print secrets in job output.
@@ -110,10 +113,11 @@ The schedule and the jobs run the code from this checkout, so keep it on this br
 6. Rebuild the dashboard with one more `--machine`:
    ```bash
    python3 dashboard/build_dashboard.py --datasource <uid> --out dashboard/hpc-monitor.json \
-       --machine stellar-ai=https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai.csv \
-       --machine <machine>=https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/<machine>.csv
+       --planned <machine not connected yet> \
+       --machine StellarAI=https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai.csv \
+       --machine <display name>=https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/<machine>.csv
    ```
-   Import the JSON in Grafana, then create or keep its public link.
+   The name before `=` is what the dashboard shows. Import the JSON in Grafana, then create or keep its public link.
 
 ## Troubleshooting
 

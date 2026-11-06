@@ -54,12 +54,21 @@ COLUMNS = (
     "run_id", "machine", "software", "version", "slurm_job_id", "status", "slurm_state",
     "failure_summary", "passed", "failed", "skipped", "duration_min", "nodes",
     "dragon_version", "submitted_at", "ended_at", "details_url", "last_reported",
+    "cpu_percent", "peak_memory_gb", "cpu_hours",
 )
 TEST_COLUMNS = (
-    "run_id", "machine", "version", "slurm_job_id", "test", "result", "error", "details_url",
-    "submitted_at",
+    "run_id", "machine", "version", "slurm_job_id", "run_status", "slurm_state", "passed",
+    "failed", "skipped", "duration_min", "cpu_percent", "peak_memory_gb", "dragon_version", "test",
+    "result", "outcome", "duration_s", "error", "details_url", "submitted_at",
 )
+USAGE_COLUMNS = (
+    "run_id", "machine", "version", "slurm_job_id", "test_file", "elapsed_s", "cpu_percent",
+    "peak_memory_gb", "submitted_at",
+)
+USAGE_FIELDS = ("JobID", "Elapsed", "TotalCPU", "CPUTime", "MaxRSS", "Start", "End")
 RESULT_ORDER = {"FAILED": 0, "PASSED": 1, "SKIPPED": 2}
+# Grafana can't colour cells inside a nested table, so the text carries the colour.
+OUTCOMES = {"FAILED": "🔴 FAILED", "PASSED": "🟢 PASSED", "SKIPPED": "⚪ SKIPPED"}
 MAX_SUMMARY_CHARS = 300
 MAX_ERROR_CHARS = 2000
 MAX_JUNIT_BYTES = 5 * 1024 * 1024
@@ -168,12 +177,69 @@ def junit_cases(path):
         skips = case.findall("skipped")
         detail = next(iter(problems + skips), None)
         error = "" if detail is None else (detail.get("message") or detail.text or "")
+        seconds = float(case.get("time") or 0)
         cases.append({
             "test": ".".join(part for part in (case.get("classname"), case.get("name")) if part),
             "result": "FAILED" if problems else "SKIPPED" if skips else "PASSED",
+            "duration_s": round(seconds, 1) if seconds > 0 else "",
             "error": error,
         })
     return cases
+
+
+def slurm_seconds(value):
+    """Convert sacct's [D-][H:]M:S[.f] to seconds, or None if it can't be read."""
+    match = re.fullmatch(r"(?:(\d+)-)?(?:(\d+):)?(\d+):(\d+)(\.\d+)?", value or "")
+    if not match:
+        return None
+    days, hours, minutes, seconds, fraction = match.groups()
+    return (int(days or 0) * 86400 + int(hours or 0) * 3600 + int(minutes) * 60 + int(seconds)
+            + float(fraction or 0))
+
+
+def memory_gb(value):
+    """Convert sacct's memory, such as 7429420K, to GiB, or None if it can't be read."""
+    match = re.fullmatch(r"([\d.]+)([KMGT]?)", value or "")
+    if not match:
+        return None
+    return float(match[1]) * {"": 1024**-3, "K": 1024**-2, "M": 1024**-1, "G": 1, "T": 1024}[match[2]]
+
+
+def summarize_usage(cpu_rows, memory_rows):
+    """CPU use across cpu_rows, and the largest memory use of any single task in memory_rows."""
+    used = sum(slurm_seconds(r["TotalCPU"]) or 0 for r in cpu_rows)
+    allocated = sum(slurm_seconds(r["CPUTime"]) or 0 for r in cpu_rows)
+    memory = [m for m in (memory_gb(r["MaxRSS"]) for r in memory_rows) if m is not None]
+    return {
+        "cpu_percent": round(100 * used / allocated, 1) if allocated else "",
+        "cpu_hours": round(used / 3600, 2),
+        "peak_memory_gb": round(max(memory), 2) if memory else "",
+    }
+
+
+def usage_per_file(steps, groups_dir):
+    """Split a job's SLURM steps between test files, using when each file's log last changed."""
+    logs = [p for p in groups_dir.glob("*.log") if not p.stem.endswith("-cleanup")]
+    logs.sort(key=lambda p: p.stat().st_mtime)
+    windows, start = [], float("-inf")
+    for path in logs:
+        windows.append((path.stem, start, path.stat().st_mtime))
+        start = path.stat().st_mtime
+    assigned = {name: [] for name, _, _ in windows}
+    for step in steps:
+        began, ended = parse_slurm_time(step["Start"]), parse_slurm_time(step["End"])
+        if began is None or ended is None or not windows:
+            continue
+        overlaps = [(min(ended, stop) - max(began, first), name) for name, first, stop in windows]
+        overlap, name = max(overlaps, key=lambda item: item[0])
+        if overlap > 0:
+            assigned[name].append(step)
+    return [
+        {"test_file": name,
+         "elapsed_s": sum(slurm_seconds(s["Elapsed"]) or 0 for s in chosen),
+         **{k: v for k, v in summarize_usage(chosen, chosen).items() if k != "cpu_hours"}}
+        for name, chosen in assigned.items() if chosen
+    ]
 
 
 def decide(job, junit_path):
@@ -635,7 +701,34 @@ class Monitor:
             "details_url": f"{public_url}/{self.details_path(run)}" if public_url else "",
             "last_reported": "",
         }
+        usage = self.job_usage(run)
+        for key in ("cpu_percent", "peak_memory_gb", "cpu_hours"):
+            values[key] = usage.get(key)
         return {k: "" if v is None else str(v) for k, v in values.items()}
+
+    def job_usage(self, run):
+        """Return what SLURM recorded a finished job using, kept once it has been read."""
+        if "usage" in run:
+            return run["usage"]
+        if not run.get("job_id") or not run.get("verdict"):
+            return {}
+        try:
+            output = self.shell(["sacct", "-j", str(run["job_id"]), "--noheader", "--parsable2",
+                                 f"--format={','.join(USAGE_FIELDS)}"])
+        except (RuntimeError, OSError) as err:
+            log.warning("could not read usage for job %s: %s", run["job_id"], err)
+            return {}
+        rows = [dict(zip(USAGE_FIELDS, line.split("|"), strict=False))
+                for line in output.splitlines() if line.strip()]
+        job = next((r for r in rows if r["JobID"] == str(run["job_id"])), None)
+        if job is None:
+            return {}  # Accounting hasn't caught up; the next tick tries again.
+        steps = [r for r in rows if re.fullmatch(rf"{run['job_id']}\.\d+", r["JobID"])]
+        run["usage"] = {
+            **summarize_usage([job], steps),
+            "files": usage_per_file(steps, pathlib.Path(run["run_dir"]) / "groups"),
+        }
+        return run["usage"]
 
     def test_rows(self, run):
         """One row per test in a finished run, or one row if a failed run names no test."""
@@ -643,8 +736,11 @@ class Monitor:
         if not verdict:
             return []
         row = self.row(run)
-        common = {k: row[k] for k in ("run_id", "machine", "version", "slurm_job_id",
-                                      "details_url", "submitted_at")}
+        common = {k: row[k] for k in (
+            "run_id", "machine", "version", "slurm_job_id", "slurm_state", "passed", "failed",
+            "skipped", "duration_min", "cpu_percent", "peak_memory_gb", "dragon_version",
+            "details_url", "submitted_at")}
+        common["run_status"] = row["status"]
         try:
             cases = junit_cases(pathlib.Path(run["run_dir"]) / "junit.xml")
         except (OSError, ET.ParseError):
@@ -654,25 +750,31 @@ class Monitor:
                      for t in verdict["failed_tests"]]
         if not cases and not verdict["ok"]:
             cases = [{"test": "(whole run)", "result": "FAILED", "error": verdict["summary"]}]
-        return [common | case | {"error": scrub(case["error"]).strip()[:MAX_ERROR_CHARS]}
+        return [common | case | {"outcome": OUTCOMES[case["result"]],
+                                 "error": scrub(case["error"]).strip()[:MAX_ERROR_CHARS]}
                 for case in cases]
 
-    def write_tests(self, path):
-        """Rebuild this machine's test list, keeping runs that lost state no longer knows."""
+    def usage_rows(self, run):
+        row = self.row(run)
+        common = {k: row[k] for k in ("run_id", "machine", "version", "slurm_job_id", "submitted_at")}
+        return [common | item for item in self.job_usage(run).get("files", [])]
+
+    def write_table(self, path, columns, rows_of):
+        """Rebuild a per-run table, keeping runs that lost state no longer knows."""
         known = {run["run_id"] for run in self.state["runs"]}
         rows = []
         if path.exists():
-            with open(path, newline="") as handle:
+            with open(path, newline="", encoding="utf-8") as handle:
                 rows = [r for r in csv.DictReader(handle) if r["run_id"] not in known]
         for run in self.state["runs"]:
-            rows += self.test_rows(run)
+            rows += rows_of(run)
         # Newest run first and, within a run, failures first.
-        rows.sort(key=lambda r: (RESULT_ORDER.get(r["result"], 0), r["test"]))
+        rows.sort(key=lambda r: (RESULT_ORDER.get(r.get("result"), 0),
+                                 r.get("test") or r.get("test_file") or ""))
         rows.sort(key=lambda r: r["submitted_at"], reverse=True)
         path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, "w", newline="") as handle:
-            writer = csv.DictWriter(handle, TEST_COLUMNS, extrasaction="ignore",
-                                    lineterminator="\n")
+        with open(path, "w", newline="", encoding="utf-8") as handle:
+            writer = csv.DictWriter(handle, columns, extrasaction="ignore", lineterminator="\n")
             writer.writeheader()
             writer.writerows(rows)
 
@@ -816,7 +918,8 @@ class Monitor:
                 self.write_artifacts(clone, run)
             if changed or heartbeat_due or not path.exists():
                 self.write_csv(path, rows)
-            self.write_tests(path.with_name(f"{self.site}-tests.csv"))
+            self.write_table(path.with_name(f"{self.site}-tests.csv"), TEST_COLUMNS, self.test_rows)
+            self.write_table(path.with_name(f"{self.site}-usage.csv"), USAGE_COLUMNS, self.usage_rows)
             self.git(clone, "add", "-A")
             if self.git(clone, "status", "--porcelain").strip():
                 self.git(clone, "commit", "--quiet", "-m", self.commit_message(rows))

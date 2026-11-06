@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
-"""Generate the Grafana dashboard JSON, with one section per machine.
+"""Generate the Grafana dashboard JSON: an overview card per machine, then each machine's details.
 
 Public dashboards can't use variables, so each machine's panels and query are written out.
-Adding a machine means rerunning this with one more --machine.
+Connecting a machine means moving it from --planned to --machine and rerunning this.
 
-    build_dashboard.py --datasource <uid> --out hpc-monitor.json \
-        --machine stellar-ai=https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai.csv
+    build_dashboard.py --datasource <uid> --out hpc-monitor.json --planned Delta \
+        --machine StellarAI=https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai.csv
 
-Each machine's test list is read from the same place, from <machine>-tests.csv.
-
-A --machine value that is a local file is embedded in the dashboard instead of fetched. Use
-that only before the public data repo exists. --push sends the result to a Grafana stack.
+The name before "=" is what the dashboard shows. Each machine's tests and usage are read from the same place, from <machine>-tests.csv and
+<machine>-usage.csv. A --machine value that is a local file is embedded in the dashboard instead
+of fetched. --push sends the result to a Grafana stack.
 """
 
 import argparse
@@ -22,12 +21,20 @@ COLUMNS = (
     "run_id", "machine", "software", "version", "slurm_job_id", "status", "slurm_state",
     "failure_summary", "passed", "failed", "skipped", "duration_min", "nodes",
     "dragon_version", "submitted_at", "ended_at", "details_url", "last_reported",
+    "cpu_percent", "peak_memory_gb", "cpu_hours",
 )
 TEST_COLUMNS = (
-    "run_id", "machine", "version", "slurm_job_id", "test", "result", "error", "details_url",
-    "submitted_at",
+    "run_id", "machine", "version", "slurm_job_id", "run_status", "slurm_state", "passed",
+    "failed", "skipped", "duration_min", "cpu_percent", "peak_memory_gb", "dragon_version", "test",
+    "result", "outcome", "duration_s", "error", "details_url", "submitted_at",
 )
-NUMBERS = {"passed", "failed", "skipped", "duration_min"}
+USAGE_COLUMNS = (
+    "run_id", "machine", "version", "slurm_job_id", "test_file", "elapsed_s", "cpu_percent",
+    "peak_memory_gb", "submitted_at",
+)
+ALL_COLUMNS = {*COLUMNS, *TEST_COLUMNS, *USAGE_COLUMNS}
+NUMBERS = {"passed", "failed", "skipped", "duration_min", "duration_s", "elapsed_s", "cpu_percent",
+           "peak_memory_gb", "cpu_hours"}
 TIMES = {"submitted_at", "ended_at", "last_reported"}
 STATUS_COLORS = {"PASSED": "green", "RUNNING": "yellow", "PENDING": "yellow", "FAILED": "red",
                  "SKIPPED": "gray"}
@@ -35,6 +42,10 @@ STATUS_MAP = [{"type": "value", "options": {
     name: {"color": color, "index": index, "text": name}
     for index, (name, color) in enumerate(STATUS_COLORS.items())
 }}]
+COLOR_CELL = {"type": "color-background", "mode": "basic"}
+WRAP = {"type": "auto", "wrapText": True}
+CARD_WIDTH = 6
+CARD_HEIGHT = 13
 
 
 def field_type(column):
@@ -62,10 +73,16 @@ class Builder:
         return {"id": self.next_id, "type": kind, "title": title, "datasource": self.datasource,
                 "gridPos": {"x": x, "y": y, "w": w, "h": h}, "targets": targets, **extra}
 
-    def stat(self, title, x, y, w, h, target, field, status=False):
-        defaults = {"mappings": STATUS_MAP} if status else {}
+    def row(self, title, y, panels=None):
+        self.next_id += 1
+        return {"id": self.next_id, "type": "row", "title": title, "collapsed": panels is not None,
+                "gridPos": {"x": 0, "y": y, "w": 24, "h": 1}, "panels": panels or []}
+
+    def stat(self, title, x, y, w, h, target, field, status=False, transformations=(), **defaults):
+        if status:
+            defaults["mappings"] = STATUS_MAP
         return self.panel(
-            "stat", title, x, y, w, h, [target],
+            "stat", title, x, y, w, h, [target], transformations=list(transformations),
             options={
                 "reduceOptions": {"calcs": ["lastNotNull"], "fields": f"/^{field}$/", "values": False},
                 "colorMode": "background" if status else "none", "graphMode": "none",
@@ -75,10 +92,10 @@ class Builder:
         )
 
 
-def keep(*names):
+def keep(*names, rename=None):
     return {"id": "organize", "options": {
-        "excludeByName": {c: True for c in {*COLUMNS, *TEST_COLUMNS} if c not in names},
-        "indexByName": {name: i for i, name in enumerate(names)}, "renameByName": {},
+        "excludeByName": {c: True for c in ALL_COLUMNS if c not in names},
+        "indexByName": {name: i for i, name in enumerate(names)}, "renameByName": rename or {},
     }}
 
 
@@ -86,32 +103,113 @@ def newest_first(field="submitted_at"):
     return {"id": "sortBy", "options": {"sort": [{"field": field, "desc": True}]}}
 
 
-def table_fields():
-    def override(name, *properties):
-        return {"matcher": {"id": "byName", "options": name},
-                "properties": [{"id": k, "value": v} for k, v in properties]}
+LATEST_RUN = [newest_first(), {"id": "limit", "options": {"limitField": 1}}]
 
-    return {"defaults": {}, "overrides": [
-        override("status", ("mappings", STATUS_MAP), ("custom.width", 100),
-                 ("custom.cellOptions", {"type": "color-background", "mode": "basic"})),
-        override("failure_summary", ("displayName", "why it failed"), ("custom.width", 420),
-                 ("custom.cellOptions", {"type": "auto", "wrapText": True})),
-        override("version", ("custom.width", 80)),
-        override("passed", ("custom.width", 70)),
-        override("failed", ("custom.width", 70)),
-        override("skipped", ("custom.width", 70)),
-        override("result", ("mappings", STATUS_MAP), ("custom.width", 100),
-                 ("custom.cellOptions", {"type": "color-background", "mode": "basic"})),
-        override("slurm_job_id", ("custom.width", 110)),
-        override("test", ("custom.width", 360),
-                 ("custom.cellOptions", {"type": "auto", "wrapText": True})),
-        override("error", ("custom.cellOptions", {"type": "auto", "wrapText": True})),
-        override("details_url", ("displayName", "logs"), ("custom.width", 70),
-                 ("links", [{"title": "Open logs and JUnit", "url": "${__value.raw}",
-                             "targetBlank": True}]),
-                 ("mappings", [{"type": "regex", "options": {
-                     "pattern": ".+", "result": {"text": "open", "index": 0}}}])),
+
+def calculate(left, operator, right, alias):
+    return {"id": "calculateField", "options": {
+        "mode": "binary", "alias": alias, "replaceFields": False,
+        "binary": {"left": left, "operator": operator, "right": right},
+        "reduce": {"reducer": "sum"},
+    }}
+
+
+def override(name, *properties):
+    return {"matcher": {"id": "byName", "options": name},
+            "properties": [{"id": k, "value": v} for k, v in properties]}
+
+
+def logs_override():
+    return override("details_url", ("displayName", "logs"), ("custom.width", 70),
+                    ("links", [{"title": "Open logs and JUnit", "url": "${__value.raw}",
+                                "targetBlank": True}]),
+                    ("mappings", [{"type": "regex", "options": {
+                        "pattern": ".+", "result": {"text": "open", "index": 0}}}]))
+
+
+def run_row_fields():
+    """Columns of the expandable run rows. Two stay flexible, so the nested table gets full width."""
+    return {"defaults": {"custom": {"filterable": True}}, "overrides": [
+        override("version", ("custom.width", 90)),
+        override("slurm_job_id", ("displayName", "job"), ("custom.width", 90)),
+        override("run_status", ("displayName", "status"), ("mappings", STATUS_MAP),
+                 ("custom.width", 110), ("custom.cellOptions", COLOR_CELL)),
+        override("slurm_state", ("displayName", "SLURM state")),
+        override("submitted_at", ("displayName", "submitted")),
+        override("passed", ("custom.width", 90)),
+        override("failed", ("custom.width", 90)),
+        override("skipped", ("custom.width", 90)),
+        override("duration_min", ("displayName", "min"), ("custom.width", 80)),
+        override("cpu_percent", ("displayName", "CPU use"), ("unit", "percent"),
+                 ("custom.width", 100)),
+        override("peak_memory_gb", ("displayName", "memory (GiB)"), ("custom.width", 130)),
+        override("dragon_version", ("displayName", "Dragon"), ("custom.width", 90)),
+        logs_override(),
     ]}
+
+
+def table_fields(machine_names=()):
+    """Formatting for the failures and per-file tables, showing machines by display name."""
+    gauge = {"type": "gauge", "mode": "basic", "valueDisplayMode": "text"}
+    names = {data: {"text": shown, "index": i} for i, (data, shown) in enumerate(machine_names)}
+    return {"defaults": {"custom": {"filterable": True}}, "overrides": [
+        override("machine", ("mappings", [{"type": "value", "options": names}]),
+                 ("custom.width", 140)),
+        override("failure_summary", ("displayName", "why it failed"), ("custom.cellOptions", WRAP)),
+        override("version", ("custom.width", 100)),
+        override("slurm_job_id", ("displayName", "job"), ("custom.width", 100)),
+        override("test_file", ("displayName", "test file"), ("custom.width", 200)),
+        override("elapsed_s", ("displayName", "time (s)"), ("custom.width", 90)),
+        override("cpu_percent", ("displayName", "CPU use of allocation"), ("unit", "percent"),
+                 ("min", 0), ("max", 100), ("color", {"mode": "fixed", "fixedColor": "blue"}),
+                 ("custom.cellOptions", gauge)),
+        override("peak_memory_gb", ("displayName", "memory (GiB)"), ("custom.width", 130)),
+        logs_override(),
+    ]}
+
+
+def machine_card(builder, name, source, x, y):
+    query = builder.query("A", source)
+    rate = [*LATEST_RUN, calculate("passed", "+", "failed", "ran"),
+            calculate("passed", "/", "ran", "pass_rate")]
+    colors = (("passed", "green"), ("failed", "red"), ("skipped", "orange"))
+    return [
+        builder.stat(name, x, y, CARD_WIDTH, 3, query, "pass_rate",
+                     transformations=rate, unit="percentunit", decimals=1, noValue="no results yet"),
+        builder.panel(
+            "piechart", "", x, y + 3, CARD_WIDTH, 7, [query],
+            transformations=[*LATEST_RUN, keep("passed", "failed", "skipped")],
+            options={"pieType": "donut", "displayLabels": [],
+                     "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
+                     "tooltip": {"mode": "single"},
+                     "legend": {"showLegend": True, "displayMode": "list", "placement": "bottom",
+                                "values": ["value"]}},
+            fieldConfig={"defaults": {}, "overrides": [
+                override(field, ("color", {"mode": "fixed", "fixedColor": color}))
+                for field, color in colors
+            ]},
+        ),
+        builder.stat("Latest run", x, y + 10, CARD_WIDTH // 2, 3, query, "status", status=True,
+                     transformations=LATEST_RUN),
+        builder.panel(
+            "table", "Last report", x + CARD_WIDTH // 2, y + 10, CARD_WIDTH // 2, 3, [query],
+            transformations=[newest_first("last_reported"),
+                             {"id": "limit", "options": {"limitField": 1}}, keep("last_reported")],
+            fieldConfig={"defaults": {"unit": "dateTimeFromNow", "custom": {"align": "center"}},
+                         "overrides": []},
+            options={"showHeader": False},
+        ),
+    ]
+
+
+def planned_card(builder, name, x, y):
+    content = ("<div style='text-align:center;margin-top:90px;color:#8e8e8e'>"
+               "<h2>Not connected</h2>No results yet</div>")
+    panel = builder.panel("text", name, x, y, CARD_WIDTH, CARD_HEIGHT, [],
+                          options={"mode": "html", "content": content})
+    panel.pop("datasource")
+    panel.pop("targets")
+    return panel
 
 
 def tests_chart(builder, x, y, w, h, target):
@@ -123,99 +221,95 @@ def tests_chart(builder, x, y, w, h, target):
                  "orientation": "vertical", "tooltip": {"mode": "multi"},
                  "legend": {"showLegend": True, "displayMode": "list", "placement": "bottom"}},
         fieldConfig={"defaults": {"custom": {"fillOpacity": 90, "lineWidth": 0}}, "overrides": [
-            {"matcher": {"id": "byName", "options": name},
-             "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": color}}]}
+            override(name, ("color", {"mode": "fixed", "fixedColor": color}))
             for name, color in colors
         ]},
     )
 
 
-def duration_chart(builder, x, y, w, h, target):
-    return builder.panel(
-        "barchart", "Job duration per release (minutes)", x, y, w, h, [target],
-        transformations=[keep("version", "duration_min")],
-        options={"xField": "version", "showValue": "auto", "tooltip": {"mode": "single"},
-                 "legend": {"showLegend": False}},
-        fieldConfig={"defaults": {"unit": "none", "color": {"mode": "fixed", "fixedColor": "blue"},
-                                  "custom": {"fillOpacity": 85, "lineWidth": 0}}, "overrides": []},
-    )
+def machine_details(builder, name, source, y):
+    """Return one machine's section and the next free row."""
+    query = builder.query("A", source)
+    base = source.removesuffix(".csv")
+    tests = builder.query("A", f"{base}-tests.csv", TEST_COLUMNS)
+    usage = builder.query("A", f"{base}-usage.csv", USAGE_COLUMNS)
+    run_fields = ("submitted_at", "version", "slurm_job_id", "run_status", "slurm_state", "passed",
+                  "failed", "skipped", "duration_min", "cpu_percent", "peak_memory_gb",
+                  "dragon_version", "details_url")
+    nested = {"id": "groupToNestedTable", "options": {
+        "showSubframeHeaders": True,
+        "fields": {c: {"aggregations": [], "operation": "groupby"} for c in run_fields},
+    }}
+    panels = [
+        builder.row(name, y),
+        builder.panel("table", "Runs, newest first: click the arrow to see every test",
+                      0, y + 1, 24, 14, [tests],
+                      # Field overrides don't reach nested tables, so rename before grouping.
+                      transformations=[keep(*run_fields, "outcome", "test", "duration_s", "error",
+                                            rename={"outcome": "test result",
+                                                    "duration_s": "time (s)"}), nested],
+                      fieldConfig=run_row_fields()),
+        tests_chart(builder, 0, y + 15, 10, 9, query),
+        builder.panel("table", "Resources per test file, newest run first", 10, y + 15, 14, 9, [usage],
+                      transformations=[keep("slurm_job_id", "test_file", "elapsed_s",
+                                            "cpu_percent", "peak_memory_gb")],
+                      fieldConfig=table_fields()),
+    ]
+    return panels, y + 24
 
 
-def tests_source(source):
-    return source.removesuffix(".csv") + "-tests.csv"
+def data_name(source):
+    """The machine's name in its data, which is the CSV file's name."""
+    return pathlib.PurePosixPath(source).stem
 
 
-def build(machines, datasource, uid, title):
+def build(machines, planned, datasource, uid, title):
     builder = Builder(datasource)
+    panels = [builder.row("HPC status overview", 0)]
+    cards = [*machines, *((name, None) for name in planned)]
+    for index, (name, source) in enumerate(cards):
+        x = CARD_WIDTH * (index % 4)
+        y = 1 + CARD_HEIGHT * (index // 4)
+        if source:
+            panels += machine_card(builder, name, source, x, y)
+        else:
+            panels.append(planned_card(builder, name, x, y))
+    y = 1 + CARD_HEIGHT * ((len(cards) + 3) // 4)
+
     letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     every = [builder.query(letters[i], source) for i, (_, source) in enumerate(machines)]
+    machine_names = [(data_name(source), name) for name, source in machines]
     merge = {"id": "merge", "options": {}}
-    panels = [
-        builder.panel("table", "All machines by release", 0, 0, 24, 2 + 2 * len(machines), every,
-                      transformations=[merge, {"id": "groupingToMatrix", "options": {
-                          "columnField": "version", "rowField": "machine",
-                          "valueField": "status", "emptyValue": "empty"}}],
-                      fieldConfig={"defaults": {"mappings": STATUS_MAP, "custom": {
-                          "align": "center",
-                          "cellOptions": {"type": "color-background", "mode": "basic"}}},
-                          "overrides": [{
-                              "matcher": {"id": "byName", "options": "machine\\version"},
-                              "properties": [
-                                  {"id": "displayName", "value": "machine"},
-                                  {"id": "custom.cellOptions", "value": {"type": "auto"}}]}]}),
-    ]
-    y = 2 + 2 * len(machines)
     panels.append(builder.panel(
-        "table", "Failures on all machines, newest first", 0, y, 24, 9, every,
+        "table", "Failures on all machines, newest first", 0, y, 24, 7, every,
         transformations=[
             merge,
             {"id": "filterByValue", "options": {"type": "include", "match": "any", "filters": [
                 {"fieldName": "status", "config": {"id": "equal", "options": {"value": "FAILED"}}}]}},
             newest_first(),
-            keep("status", "machine", "version", "failure_summary", "details_url", "slurm_state",
-                 "slurm_job_id", "submitted_at"),
+            keep("machine", "version", "slurm_job_id", "failure_summary", "details_url"),
         ],
-        fieldConfig=table_fields(),
+        fieldConfig=table_fields(machine_names),
     ))
-    y += 9
+    y += 7
     for name, source in machines:
-        query = builder.query("A", source)
-        builder.next_id += 1
-        panels.append({"id": builder.next_id, "type": "row", "title": name, "collapsed": False,
-                       "gridPos": {"x": 0, "y": y, "w": 24, "h": 1}, "panels": []})
-        y += 1
-        panels += [
-            builder.stat("Latest run", 0, y, 3, 4, query, "status", status=True),
-            builder.stat("Release", 3, y, 3, 4, query, "version"),
-            builder.stat("SLURM job", 0, y + 4, 3, 4, query, "slurm_job_id"),
-            builder.panel(
-                "table", "Last report", 3, y + 4, 3, 4, [query],
-                transformations=[newest_first("last_reported"),
-                                 {"id": "limit", "options": {"limitField": 1}},
-                                 keep("last_reported")],
-                fieldConfig={"defaults": {"unit": "dateTimeFromNow", "custom": {"align": "center"}},
-                             "overrides": []},
-                options={"showHeader": False},
-            ),
-            tests_chart(builder, 6, y, 9, 8, query),
-            duration_chart(builder, 15, y, 9, 8, query),
-            builder.panel(
-                "table", f"{name}: runs, newest first", 0, y + 8, 24, 8, [query],
-                transformations=[newest_first(), keep(
-                    "status", "version", "failure_summary", "details_url", "slurm_state",
-                    "slurm_job_id", "passed", "failed", "skipped", "dragon_version",
-                    "submitted_at")],
-                fieldConfig=table_fields(),
-            ),
-            builder.panel(
-                "table", f"{name}: all tests, newest run first, failures first",
-                0, y + 16, 24, 14, [builder.query("A", tests_source(source), TEST_COLUMNS)],
-                transformations=[keep(
-                    "version", "slurm_job_id", "result", "test", "error", "details_url")],
-                fieldConfig=table_fields(),
-            ),
-        ]
-        y += 30
+        details, y = machine_details(builder, name, source, y)
+        panels += details
+    panels.append(builder.row("All machines by release", y, [
+        builder.panel("table", "Status of each release on each machine", 0, y + 1, 24,
+                      2 + 2 * len(machines), every,
+                      transformations=[merge, {"id": "groupingToMatrix", "options": {
+                          "columnField": "version", "rowField": "machine",
+                          "valueField": "status", "emptyValue": "empty"}}],
+                      fieldConfig={"defaults": {"mappings": STATUS_MAP, "custom": {
+                          "align": "center", "cellOptions": COLOR_CELL}},
+                          "overrides": [override(
+                              "machine\\version", ("displayName", "machine"),
+                              ("custom.cellOptions", {"type": "auto"}),
+                              ("mappings", [{"type": "value", "options": {
+                                  data: {"text": shown, "index": i}
+                                  for i, (data, shown) in enumerate(machine_names)}}]))]}),
+    ]))
     return {"uid": uid, "title": title, "schemaVersion": 39, "panels": panels, "refresh": "5m",
             "timezone": "utc", "time": {"from": "now-1h", "to": "now"}}
 
@@ -241,16 +335,18 @@ def push(dashboard, stack, token_file):
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--machine", action="append", required=True, metavar="NAME=CSV")
+    parser.add_argument("--planned", action="append", default=[], metavar="NAME",
+                        help="a machine to show as a grey 'not connected' card")
     parser.add_argument("--datasource", required=True, help="Infinity data source UID")
     parser.add_argument("--uid", default="dashboard-spike")
-    parser.add_argument("--title", default="HPC test monitor")
+    parser.add_argument("--title", default="HPC Monthly Test Suite")
     parser.add_argument("--out", type=pathlib.Path)
     parser.add_argument("--push", metavar="STACK_URL")
     parser.add_argument("--token-file", default="~/.hpc-monitor-grafana/grafana.token")
     args = parser.parse_args()
 
     machines = [tuple(item.split("=", 1)) for item in args.machine]
-    dashboard = build(machines, args.datasource, args.uid, args.title)
+    dashboard = build(machines, args.planned, args.datasource, args.uid, args.title)
     if args.out:
         args.out.write_text(json.dumps(dashboard, indent=1) + "\n")
     if args.push:

@@ -78,6 +78,7 @@ class Base(unittest.TestCase):
         self.script("sacct", """
             [ -e "$FAKE/sacct.fail" ] && { echo "sacct: database down" >&2; exit 1; }
             case "$*" in *--name=*) cat "$FAKE/sacct.name" 2>/dev/null; exit 0;; esac
+            case "$*" in *TotalCPU*) cat "$FAKE/sacct.usage" 2>/dev/null; exit 0;; esac
             cat "$FAKE/sacct.txt" 2>/dev/null
             exit 0
         """)
@@ -555,6 +556,7 @@ class Publishing(Base):
             ("t.b", "FAILED"), ("t.a", "PASSED"), ("t.c", "SKIPPED")])
         self.assertEqual(rows[0]["error"], "TimeoutError: 0/1 tasks")
         self.assertEqual(rows[2]["error"], "no GPU")
+        self.assertEqual(rows[0]["outcome"], "🔴 FAILED")
 
     def test_newest_run_is_listed_first(self):
         self.finished_run("COMPLETED", ALL_PASS)
@@ -588,6 +590,50 @@ class Publishing(Base):
         monitor = hpc_monitor.Monitor(hpc_monitor.load_config(self.site))
         clone = monitor.prepare_clone()
         self.assertEqual([r["test"] for r in self.published_tests(clone)], ["t.b", "t.a"])
+
+    def test_time_and_run_details_are_on_each_test_row(self):
+        self.finished_run("COMPLETED", """<testsuites><testsuite>
+<testcase classname="t" name="a" time="2.345"/><testcase classname="t" name="b" time="0"/>
+</testsuite></testsuites>""")
+        _, clone = self.published()
+        rows = {r["test"]: r for r in self.published_tests(clone)}
+        self.assertEqual(rows["t.a"]["duration_s"], "2.3")
+        self.assertEqual(rows["t.b"]["duration_s"], "")
+        self.assertEqual((rows["t.a"]["run_status"], rows["t.a"]["passed"]), ("PASSED", "2"))
+        self.assertEqual(rows["t.a"]["duration_min"], "10.0")
+        for column in ("cpu_percent", "peak_memory_gb", "dragon_version"):
+            self.assertIn(column, rows["t.a"])
+
+    def test_usage_is_published_per_run_and_per_file(self):
+        (self.fake / "sacct.usage").write_text(
+            "4242|00:10:00|02:30:00|10:00:00||2027-01-15T08:00:00|2027-01-15T08:10:00\n"
+            "4242.batch|00:10:00|00:10.000|05:00:00|900G|2027-01-15T08:00:00|2027-01-15T08:10:00\n"
+            "4242.0|00:02:00|30:00|02:00:00|1048576K|2027-01-15T08:00:00|2027-01-15T08:02:00\n"
+            "4242.1|00:03:00|01:30:00|03:00:00|2G|2027-01-15T08:02:00|2027-01-15T08:05:00\n")
+        self.assertEqual(self.run_version(), 0)
+        groups = pathlib.Path(self.record()["run_dir"]) / "groups"
+        groups.mkdir(exist_ok=True)
+        for name, stamp in (("test_a", "2027-01-15T08:02:00"), ("test_b", "2027-01-15T08:05:00")):
+            (groups / f"{name}.log").write_text("log")
+            moment = hpc_monitor.parse_slurm_time(stamp)
+            os.utime(groups / f"{name}.log", (moment, moment))
+        (groups / "test_b-cleanup.log").write_text("log")
+        self.set_job("COMPLETED")
+        self.write_junit(ALL_PASS)
+        self.tick()
+        rows, clone = self.published()
+        self.assertEqual((rows[-1]["cpu_percent"], rows[-1]["peak_memory_gb"]), ("25.0", "2.0"))
+        self.assertEqual(rows[-1]["cpu_hours"], "2.5")
+        with open(clone / "data" / "machine-a-usage.csv", newline="") as handle:
+            files = {r["test_file"]: r for r in csv.DictReader(handle)}
+        self.assertEqual(sorted(files), ["test_a", "test_b"])
+        self.assertEqual((files["test_a"]["cpu_percent"], files["test_a"]["peak_memory_gb"]),
+                         ("25.0", "1.0"))
+        self.assertEqual(files["test_b"]["elapsed_s"], "180.0")
+
+    def test_usage_retries_while_accounting_catches_up(self):
+        self.finished_run("COMPLETED", ALL_PASS)
+        self.assertNotIn("usage", self.record())
 
     def test_failed_file_log_is_published_scrubbed(self):
         self.assertEqual(self.run_version(), 0)
