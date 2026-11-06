@@ -1,0 +1,17 @@
+# Copy this directory to sites/<machine>/ and fill in the values. See README.md.
+
+machine = "<machine>"  # the dashboard section and data/<machine>.csv
+python = "python3"  # must be 3.11 to 3.13 for Dragon
+setup = []  # shell lines to run before building the environment, e.g. "module load openmpi"
+
+[publish]
+repo = "git@github.com:radical-cybertools/radical-hpc-test-suite.git"
+ssh_key = "~/.hpc-monitor-grafana/deploy_key"
+public_url = "https://github.com/radical-cybertools/radical-hpc-test-suite/tree/results"
+branch = "results"
+
+[[run]]
+name = "rhapsody-dragon"
+package = "rhapsody-py"
+job_script = "dragon_suite.sbatch"
+extra_packages = ["pytest", "pytest-asyncio", "mpi4py"]

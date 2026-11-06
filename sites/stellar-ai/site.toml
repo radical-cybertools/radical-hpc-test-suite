@@ -1,0 +1,18 @@
+# What hpc_monitor.py needs for this machine. Job settings live in dragon_suite.sbatch.
+
+machine = "stellar-ai"
+python = "python3"
+setup = ["module load openmpi/gcc/5.0.10"]  # mpi4py builds against this MPI
+
+[publish]
+# Results go on their own branch of this repo, so machine commits stay out of the code history.
+repo = "git@github.com:radical-cybertools/radical-hpc-test-suite.git"
+ssh_key = "~/.hpc-monitor-grafana/deploy_key"
+public_url = "https://github.com/radical-cybertools/radical-hpc-test-suite/tree/results"
+branch = "results"
+
+[[run]]
+name = "rhapsody-dragon"
+package = "rhapsody-py"
+job_script = "dragon_suite.sbatch"
+extra_packages = ["pytest", "pytest-asyncio", "mpi4py"]

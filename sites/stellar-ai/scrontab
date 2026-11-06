@@ -1,0 +1,16 @@
+# Monitor schedule for Stellar AI. Install with: scrontab sites/stellar-ai/scrontab
+# That replaces your whole table, so merge first if "scrontab -l" lists other entries.
+#
+# crontab is denied on this machine and compute nodes have no internet, so this short job
+# connects back to the login node, using the short hostname, and runs the monitor there.
+# The limit allows for building a fresh environment on the tick that starts a run.
+#SCRON --account=csd
+#SCRON --partition=cpu
+#SCRON --qos=test
+#SCRON --nodes=1
+#SCRON --ntasks=1
+#SCRON --time=00:30:00
+#SCRON --job-name=hpc-grafana-tick
+#SCRON --output=/home/aa1095/.hpc-monitor-grafana-scron.out
+#SCRON --open-mode=append
+*/15 * * * * ssh -o BatchMode=yes stellarai-amd 'python3 /home/aa1095/TEST-RHAPSODY/radical-hpc-test-suite/hpc_monitor.py tick --site /home/aa1095/TEST-RHAPSODY/radical-hpc-test-suite/sites/stellar-ai/site.toml'

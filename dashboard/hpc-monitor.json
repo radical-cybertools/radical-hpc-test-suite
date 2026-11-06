@@ -1,0 +1,2448 @@
+{
+ "uid": "dashboard-spike",
+ "title": "HPC test monitor",
+ "schemaVersion": 39,
+ "panels": [
+  {
+   "id": 1,
+   "type": "table",
+   "title": "All machines by release",
+   "datasource": {
+    "uid": "eg3hw0i7u8q2oa",
+    "type": "yesoreyeram-infinity-datasource"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 0,
+    "w": 24,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "uid": "eg3hw0i7u8q2oa",
+      "type": "yesoreyeram-infinity-datasource"
+     },
+     "type": "csv",
+     "format": "table",
+     "parser": "backend",
+     "root_selector": "",
+     "filters": [],
+     "csv_options": {},
+     "columns": [
+      {
+       "selector": "run_id",
+       "text": "run_id",
+       "type": "string"
+      },
+      {
+       "selector": "machine",
+       "text": "machine",
+       "type": "string"
+      },
+      {
+       "selector": "software",
+       "text": "software",
+       "type": "string"
+      },
+      {
+       "selector": "version",
+       "text": "version",
+       "type": "string"
+      },
+      {
+       "selector": "slurm_job_id",
+       "text": "slurm_job_id",
+       "type": "string"
+      },
+      {
+       "selector": "status",
+       "text": "status",
+       "type": "string"
+      },
+      {
+       "selector": "slurm_state",
+       "text": "slurm_state",
+       "type": "string"
+      },
+      {
+       "selector": "failure_summary",
+       "text": "failure_summary",
+       "type": "string"
+      },
+      {
+       "selector": "passed",
+       "text": "passed",
+       "type": "number"
+      },
+      {
+       "selector": "failed",
+       "text": "failed",
+       "type": "number"
+      },
+      {
+       "selector": "skipped",
+       "text": "skipped",
+       "type": "number"
+      },
+      {
+       "selector": "duration_min",
+       "text": "duration_min",
+       "type": "number"
+      },
+      {
+       "selector": "nodes",
+       "text": "nodes",
+       "type": "string"
+      },
+      {
+       "selector": "dragon_version",
+       "text": "dragon_version",
+       "type": "string"
+      },
+      {
+       "selector": "submitted_at",
+       "text": "submitted_at",
+       "type": "timestamp"
+      },
+      {
+       "selector": "ended_at",
+       "text": "ended_at",
+       "type": "timestamp"
+      },
+      {
+       "selector": "details_url",
+       "text": "details_url",
+       "type": "string"
+      },
+      {
+       "selector": "last_reported",
+       "text": "last_reported",
+       "type": "timestamp"
+      }
+     ],
+     "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai.csv",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     },
+     "source": "url"
+    }
+   ],
+   "transformations": [
+    {
+     "id": "merge",
+     "options": {}
+    },
+    {
+     "id": "groupingToMatrix",
+     "options": {
+      "columnField": "version",
+      "rowField": "machine",
+      "valueField": "status",
+      "emptyValue": "empty"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "mappings": [
+      {
+       "type": "value",
+       "options": {
+        "PASSED": {
+         "color": "green",
+         "index": 0,
+         "text": "PASSED"
+        },
+        "RUNNING": {
+         "color": "yellow",
+         "index": 1,
+         "text": "RUNNING"
+        },
+        "PENDING": {
+         "color": "yellow",
+         "index": 2,
+         "text": "PENDING"
+        },
+        "FAILED": {
+         "color": "red",
+         "index": 3,
+         "text": "FAILED"
+        }
+       }
+      }
+     ],
+     "custom": {
+      "align": "center",
+      "cellOptions": {
+       "type": "color-background",
+       "mode": "basic"
+      }
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "machine\\version"
+      },
+      "properties": [
+       {
+        "id": "displayName",
+        "value": "machine"
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "auto"
+        }
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": 2,
+   "type": "table",
+   "title": "Failures on all machines, newest first",
+   "datasource": {
+    "uid": "eg3hw0i7u8q2oa",
+    "type": "yesoreyeram-infinity-datasource"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 4,
+    "w": 24,
+    "h": 9
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "uid": "eg3hw0i7u8q2oa",
+      "type": "yesoreyeram-infinity-datasource"
+     },
+     "type": "csv",
+     "format": "table",
+     "parser": "backend",
+     "root_selector": "",
+     "filters": [],
+     "csv_options": {},
+     "columns": [
+      {
+       "selector": "run_id",
+       "text": "run_id",
+       "type": "string"
+      },
+      {
+       "selector": "machine",
+       "text": "machine",
+       "type": "string"
+      },
+      {
+       "selector": "software",
+       "text": "software",
+       "type": "string"
+      },
+      {
+       "selector": "version",
+       "text": "version",
+       "type": "string"
+      },
+      {
+       "selector": "slurm_job_id",
+       "text": "slurm_job_id",
+       "type": "string"
+      },
+      {
+       "selector": "status",
+       "text": "status",
+       "type": "string"
+      },
+      {
+       "selector": "slurm_state",
+       "text": "slurm_state",
+       "type": "string"
+      },
+      {
+       "selector": "failure_summary",
+       "text": "failure_summary",
+       "type": "string"
+      },
+      {
+       "selector": "passed",
+       "text": "passed",
+       "type": "number"
+      },
+      {
+       "selector": "failed",
+       "text": "failed",
+       "type": "number"
+      },
+      {
+       "selector": "skipped",
+       "text": "skipped",
+       "type": "number"
+      },
+      {
+       "selector": "duration_min",
+       "text": "duration_min",
+       "type": "number"
+      },
+      {
+       "selector": "nodes",
+       "text": "nodes",
+       "type": "string"
+      },
+      {
+       "selector": "dragon_version",
+       "text": "dragon_version",
+       "type": "string"
+      },
+      {
+       "selector": "submitted_at",
+       "text": "submitted_at",
+       "type": "timestamp"
+      },
+      {
+       "selector": "ended_at",
+       "text": "ended_at",
+       "type": "timestamp"
+      },
+      {
+       "selector": "details_url",
+       "text": "details_url",
+       "type": "string"
+      },
+      {
+       "selector": "last_reported",
+       "text": "last_reported",
+       "type": "timestamp"
+      }
+     ],
+     "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai.csv",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     },
+     "source": "url"
+    }
+   ],
+   "transformations": [
+    {
+     "id": "merge",
+     "options": {}
+    },
+    {
+     "id": "filterByValue",
+     "options": {
+      "type": "include",
+      "match": "any",
+      "filters": [
+       {
+        "fieldName": "status",
+        "config": {
+         "id": "equal",
+         "options": {
+          "value": "FAILED"
+         }
+        }
+       }
+      ]
+     }
+    },
+    {
+     "id": "sortBy",
+     "options": {
+      "sort": [
+       {
+        "field": "submitted_at",
+        "desc": true
+       }
+      ]
+     }
+    },
+    {
+     "id": "organize",
+     "options": {
+      "excludeByName": {
+       "ended_at": true,
+       "dragon_version": true,
+       "failed": true,
+       "skipped": true,
+       "last_reported": true,
+       "passed": true,
+       "duration_min": true,
+       "test": true,
+       "run_id": true,
+       "details": true,
+       "nodes": true,
+       "software": true,
+       "error": true
+      },
+      "indexByName": {
+       "status": 0,
+       "machine": 1,
+       "version": 2,
+       "failure_summary": 3,
+       "details_url": 4,
+       "slurm_state": 5,
+       "slurm_job_id": 6,
+       "submitted_at": 7
+      },
+      "renameByName": {}
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "status"
+      },
+      "properties": [
+       {
+        "id": "mappings",
+        "value": [
+         {
+          "type": "value",
+          "options": {
+           "PASSED": {
+            "color": "green",
+            "index": 0,
+            "text": "PASSED"
+           },
+           "RUNNING": {
+            "color": "yellow",
+            "index": 1,
+            "text": "RUNNING"
+           },
+           "PENDING": {
+            "color": "yellow",
+            "index": 2,
+            "text": "PENDING"
+           },
+           "FAILED": {
+            "color": "red",
+            "index": 3,
+            "text": "FAILED"
+           }
+          }
+         }
+        ]
+       },
+       {
+        "id": "custom.width",
+        "value": 100
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "color-background",
+         "mode": "basic"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "failure_summary"
+      },
+      "properties": [
+       {
+        "id": "displayName",
+        "value": "why it failed"
+       },
+       {
+        "id": "custom.width",
+        "value": 420
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "auto",
+         "wrapText": true
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "version"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 80
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "passed"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 70
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "failed"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 70
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "skipped"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 70
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "test"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 300
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "auto",
+         "wrapText": true
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "error"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 560
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "auto",
+         "wrapText": true
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "details"
+      },
+      "properties": [
+       {
+        "id": "displayName",
+        "value": "full output (hover, then click the eye)"
+       },
+       {
+        "id": "custom.inspect",
+        "value": true
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "details_url"
+      },
+      "properties": [
+       {
+        "id": "displayName",
+        "value": "logs"
+       },
+       {
+        "id": "custom.width",
+        "value": 70
+       },
+       {
+        "id": "links",
+        "value": [
+         {
+          "title": "Open logs and JUnit",
+          "url": "${__value.raw}",
+          "targetBlank": true
+         }
+        ]
+       },
+       {
+        "id": "mappings",
+        "value": [
+         {
+          "type": "regex",
+          "options": {
+           "pattern": ".+",
+           "result": {
+            "text": "open",
+            "index": 0
+           }
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": 3,
+   "type": "row",
+   "title": "stellar-ai",
+   "collapsed": false,
+   "gridPos": {
+    "x": 0,
+    "y": 13,
+    "w": 24,
+    "h": 1
+   },
+   "panels": []
+  },
+  {
+   "id": 4,
+   "type": "stat",
+   "title": "Latest run",
+   "datasource": {
+    "uid": "eg3hw0i7u8q2oa",
+    "type": "yesoreyeram-infinity-datasource"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 14,
+    "w": 3,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "uid": "eg3hw0i7u8q2oa",
+      "type": "yesoreyeram-infinity-datasource"
+     },
+     "type": "csv",
+     "format": "table",
+     "parser": "backend",
+     "root_selector": "",
+     "filters": [],
+     "csv_options": {},
+     "columns": [
+      {
+       "selector": "run_id",
+       "text": "run_id",
+       "type": "string"
+      },
+      {
+       "selector": "machine",
+       "text": "machine",
+       "type": "string"
+      },
+      {
+       "selector": "software",
+       "text": "software",
+       "type": "string"
+      },
+      {
+       "selector": "version",
+       "text": "version",
+       "type": "string"
+      },
+      {
+       "selector": "slurm_job_id",
+       "text": "slurm_job_id",
+       "type": "string"
+      },
+      {
+       "selector": "status",
+       "text": "status",
+       "type": "string"
+      },
+      {
+       "selector": "slurm_state",
+       "text": "slurm_state",
+       "type": "string"
+      },
+      {
+       "selector": "failure_summary",
+       "text": "failure_summary",
+       "type": "string"
+      },
+      {
+       "selector": "passed",
+       "text": "passed",
+       "type": "number"
+      },
+      {
+       "selector": "failed",
+       "text": "failed",
+       "type": "number"
+      },
+      {
+       "selector": "skipped",
+       "text": "skipped",
+       "type": "number"
+      },
+      {
+       "selector": "duration_min",
+       "text": "duration_min",
+       "type": "number"
+      },
+      {
+       "selector": "nodes",
+       "text": "nodes",
+       "type": "string"
+      },
+      {
+       "selector": "dragon_version",
+       "text": "dragon_version",
+       "type": "string"
+      },
+      {
+       "selector": "submitted_at",
+       "text": "submitted_at",
+       "type": "timestamp"
+      },
+      {
+       "selector": "ended_at",
+       "text": "ended_at",
+       "type": "timestamp"
+      },
+      {
+       "selector": "details_url",
+       "text": "details_url",
+       "type": "string"
+      },
+      {
+       "selector": "last_reported",
+       "text": "last_reported",
+       "type": "timestamp"
+      }
+     ],
+     "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai.csv",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     },
+     "source": "url"
+    }
+   ],
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/^status$/",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "mappings": [
+      {
+       "type": "value",
+       "options": {
+        "PASSED": {
+         "color": "green",
+         "index": 0,
+         "text": "PASSED"
+        },
+        "RUNNING": {
+         "color": "yellow",
+         "index": 1,
+         "text": "RUNNING"
+        },
+        "PENDING": {
+         "color": "yellow",
+         "index": 2,
+         "text": "PENDING"
+        },
+        "FAILED": {
+         "color": "red",
+         "index": 3,
+         "text": "FAILED"
+        }
+       }
+      }
+     ]
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 5,
+   "type": "stat",
+   "title": "Release",
+   "datasource": {
+    "uid": "eg3hw0i7u8q2oa",
+    "type": "yesoreyeram-infinity-datasource"
+   },
+   "gridPos": {
+    "x": 3,
+    "y": 14,
+    "w": 3,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "uid": "eg3hw0i7u8q2oa",
+      "type": "yesoreyeram-infinity-datasource"
+     },
+     "type": "csv",
+     "format": "table",
+     "parser": "backend",
+     "root_selector": "",
+     "filters": [],
+     "csv_options": {},
+     "columns": [
+      {
+       "selector": "run_id",
+       "text": "run_id",
+       "type": "string"
+      },
+      {
+       "selector": "machine",
+       "text": "machine",
+       "type": "string"
+      },
+      {
+       "selector": "software",
+       "text": "software",
+       "type": "string"
+      },
+      {
+       "selector": "version",
+       "text": "version",
+       "type": "string"
+      },
+      {
+       "selector": "slurm_job_id",
+       "text": "slurm_job_id",
+       "type": "string"
+      },
+      {
+       "selector": "status",
+       "text": "status",
+       "type": "string"
+      },
+      {
+       "selector": "slurm_state",
+       "text": "slurm_state",
+       "type": "string"
+      },
+      {
+       "selector": "failure_summary",
+       "text": "failure_summary",
+       "type": "string"
+      },
+      {
+       "selector": "passed",
+       "text": "passed",
+       "type": "number"
+      },
+      {
+       "selector": "failed",
+       "text": "failed",
+       "type": "number"
+      },
+      {
+       "selector": "skipped",
+       "text": "skipped",
+       "type": "number"
+      },
+      {
+       "selector": "duration_min",
+       "text": "duration_min",
+       "type": "number"
+      },
+      {
+       "selector": "nodes",
+       "text": "nodes",
+       "type": "string"
+      },
+      {
+       "selector": "dragon_version",
+       "text": "dragon_version",
+       "type": "string"
+      },
+      {
+       "selector": "submitted_at",
+       "text": "submitted_at",
+       "type": "timestamp"
+      },
+      {
+       "selector": "ended_at",
+       "text": "ended_at",
+       "type": "timestamp"
+      },
+      {
+       "selector": "details_url",
+       "text": "details_url",
+       "type": "string"
+      },
+      {
+       "selector": "last_reported",
+       "text": "last_reported",
+       "type": "timestamp"
+      }
+     ],
+     "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai.csv",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     },
+     "source": "url"
+    }
+   ],
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/^version$/",
+     "values": false
+    },
+    "colorMode": "none",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center"
+   },
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   }
+  },
+  {
+   "id": 6,
+   "type": "stat",
+   "title": "SLURM job",
+   "datasource": {
+    "uid": "eg3hw0i7u8q2oa",
+    "type": "yesoreyeram-infinity-datasource"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 18,
+    "w": 3,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "uid": "eg3hw0i7u8q2oa",
+      "type": "yesoreyeram-infinity-datasource"
+     },
+     "type": "csv",
+     "format": "table",
+     "parser": "backend",
+     "root_selector": "",
+     "filters": [],
+     "csv_options": {},
+     "columns": [
+      {
+       "selector": "run_id",
+       "text": "run_id",
+       "type": "string"
+      },
+      {
+       "selector": "machine",
+       "text": "machine",
+       "type": "string"
+      },
+      {
+       "selector": "software",
+       "text": "software",
+       "type": "string"
+      },
+      {
+       "selector": "version",
+       "text": "version",
+       "type": "string"
+      },
+      {
+       "selector": "slurm_job_id",
+       "text": "slurm_job_id",
+       "type": "string"
+      },
+      {
+       "selector": "status",
+       "text": "status",
+       "type": "string"
+      },
+      {
+       "selector": "slurm_state",
+       "text": "slurm_state",
+       "type": "string"
+      },
+      {
+       "selector": "failure_summary",
+       "text": "failure_summary",
+       "type": "string"
+      },
+      {
+       "selector": "passed",
+       "text": "passed",
+       "type": "number"
+      },
+      {
+       "selector": "failed",
+       "text": "failed",
+       "type": "number"
+      },
+      {
+       "selector": "skipped",
+       "text": "skipped",
+       "type": "number"
+      },
+      {
+       "selector": "duration_min",
+       "text": "duration_min",
+       "type": "number"
+      },
+      {
+       "selector": "nodes",
+       "text": "nodes",
+       "type": "string"
+      },
+      {
+       "selector": "dragon_version",
+       "text": "dragon_version",
+       "type": "string"
+      },
+      {
+       "selector": "submitted_at",
+       "text": "submitted_at",
+       "type": "timestamp"
+      },
+      {
+       "selector": "ended_at",
+       "text": "ended_at",
+       "type": "timestamp"
+      },
+      {
+       "selector": "details_url",
+       "text": "details_url",
+       "type": "string"
+      },
+      {
+       "selector": "last_reported",
+       "text": "last_reported",
+       "type": "timestamp"
+      }
+     ],
+     "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai.csv",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     },
+     "source": "url"
+    }
+   ],
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/^slurm_job_id$/",
+     "values": false
+    },
+    "colorMode": "none",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center"
+   },
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   }
+  },
+  {
+   "id": 7,
+   "type": "table",
+   "title": "Last report",
+   "datasource": {
+    "uid": "eg3hw0i7u8q2oa",
+    "type": "yesoreyeram-infinity-datasource"
+   },
+   "gridPos": {
+    "x": 3,
+    "y": 18,
+    "w": 3,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "uid": "eg3hw0i7u8q2oa",
+      "type": "yesoreyeram-infinity-datasource"
+     },
+     "type": "csv",
+     "format": "table",
+     "parser": "backend",
+     "root_selector": "",
+     "filters": [],
+     "csv_options": {},
+     "columns": [
+      {
+       "selector": "run_id",
+       "text": "run_id",
+       "type": "string"
+      },
+      {
+       "selector": "machine",
+       "text": "machine",
+       "type": "string"
+      },
+      {
+       "selector": "software",
+       "text": "software",
+       "type": "string"
+      },
+      {
+       "selector": "version",
+       "text": "version",
+       "type": "string"
+      },
+      {
+       "selector": "slurm_job_id",
+       "text": "slurm_job_id",
+       "type": "string"
+      },
+      {
+       "selector": "status",
+       "text": "status",
+       "type": "string"
+      },
+      {
+       "selector": "slurm_state",
+       "text": "slurm_state",
+       "type": "string"
+      },
+      {
+       "selector": "failure_summary",
+       "text": "failure_summary",
+       "type": "string"
+      },
+      {
+       "selector": "passed",
+       "text": "passed",
+       "type": "number"
+      },
+      {
+       "selector": "failed",
+       "text": "failed",
+       "type": "number"
+      },
+      {
+       "selector": "skipped",
+       "text": "skipped",
+       "type": "number"
+      },
+      {
+       "selector": "duration_min",
+       "text": "duration_min",
+       "type": "number"
+      },
+      {
+       "selector": "nodes",
+       "text": "nodes",
+       "type": "string"
+      },
+      {
+       "selector": "dragon_version",
+       "text": "dragon_version",
+       "type": "string"
+      },
+      {
+       "selector": "submitted_at",
+       "text": "submitted_at",
+       "type": "timestamp"
+      },
+      {
+       "selector": "ended_at",
+       "text": "ended_at",
+       "type": "timestamp"
+      },
+      {
+       "selector": "details_url",
+       "text": "details_url",
+       "type": "string"
+      },
+      {
+       "selector": "last_reported",
+       "text": "last_reported",
+       "type": "timestamp"
+      }
+     ],
+     "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai.csv",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     },
+     "source": "url"
+    }
+   ],
+   "transformations": [
+    {
+     "id": "sortBy",
+     "options": {
+      "sort": [
+       {
+        "field": "last_reported",
+        "desc": true
+       }
+      ]
+     }
+    },
+    {
+     "id": "limit",
+     "options": {
+      "limitField": 1
+     }
+    },
+    {
+     "id": "organize",
+     "options": {
+      "excludeByName": {
+       "ended_at": true,
+       "machine": true,
+       "version": true,
+       "dragon_version": true,
+       "failure_summary": true,
+       "failed": true,
+       "skipped": true,
+       "details_url": true,
+       "passed": true,
+       "duration_min": true,
+       "slurm_job_id": true,
+       "test": true,
+       "run_id": true,
+       "submitted_at": true,
+       "details": true,
+       "slurm_state": true,
+       "nodes": true,
+       "software": true,
+       "status": true,
+       "error": true
+      },
+      "indexByName": {
+       "last_reported": 0
+      },
+      "renameByName": {}
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "dateTimeFromNow",
+     "custom": {
+      "align": "center"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "showHeader": false
+   }
+  },
+  {
+   "id": 8,
+   "type": "barchart",
+   "title": "Tests per release",
+   "datasource": {
+    "uid": "eg3hw0i7u8q2oa",
+    "type": "yesoreyeram-infinity-datasource"
+   },
+   "gridPos": {
+    "x": 6,
+    "y": 14,
+    "w": 9,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "uid": "eg3hw0i7u8q2oa",
+      "type": "yesoreyeram-infinity-datasource"
+     },
+     "type": "csv",
+     "format": "table",
+     "parser": "backend",
+     "root_selector": "",
+     "filters": [],
+     "csv_options": {},
+     "columns": [
+      {
+       "selector": "run_id",
+       "text": "run_id",
+       "type": "string"
+      },
+      {
+       "selector": "machine",
+       "text": "machine",
+       "type": "string"
+      },
+      {
+       "selector": "software",
+       "text": "software",
+       "type": "string"
+      },
+      {
+       "selector": "version",
+       "text": "version",
+       "type": "string"
+      },
+      {
+       "selector": "slurm_job_id",
+       "text": "slurm_job_id",
+       "type": "string"
+      },
+      {
+       "selector": "status",
+       "text": "status",
+       "type": "string"
+      },
+      {
+       "selector": "slurm_state",
+       "text": "slurm_state",
+       "type": "string"
+      },
+      {
+       "selector": "failure_summary",
+       "text": "failure_summary",
+       "type": "string"
+      },
+      {
+       "selector": "passed",
+       "text": "passed",
+       "type": "number"
+      },
+      {
+       "selector": "failed",
+       "text": "failed",
+       "type": "number"
+      },
+      {
+       "selector": "skipped",
+       "text": "skipped",
+       "type": "number"
+      },
+      {
+       "selector": "duration_min",
+       "text": "duration_min",
+       "type": "number"
+      },
+      {
+       "selector": "nodes",
+       "text": "nodes",
+       "type": "string"
+      },
+      {
+       "selector": "dragon_version",
+       "text": "dragon_version",
+       "type": "string"
+      },
+      {
+       "selector": "submitted_at",
+       "text": "submitted_at",
+       "type": "timestamp"
+      },
+      {
+       "selector": "ended_at",
+       "text": "ended_at",
+       "type": "timestamp"
+      },
+      {
+       "selector": "details_url",
+       "text": "details_url",
+       "type": "string"
+      },
+      {
+       "selector": "last_reported",
+       "text": "last_reported",
+       "type": "timestamp"
+      }
+     ],
+     "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai.csv",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     },
+     "source": "url"
+    }
+   ],
+   "transformations": [
+    {
+     "id": "organize",
+     "options": {
+      "excludeByName": {
+       "ended_at": true,
+       "machine": true,
+       "dragon_version": true,
+       "failure_summary": true,
+       "last_reported": true,
+       "details_url": true,
+       "duration_min": true,
+       "slurm_job_id": true,
+       "test": true,
+       "run_id": true,
+       "submitted_at": true,
+       "details": true,
+       "slurm_state": true,
+       "nodes": true,
+       "software": true,
+       "status": true,
+       "error": true
+      },
+      "indexByName": {
+       "version": 0,
+       "passed": 1,
+       "failed": 2,
+       "skipped": 3
+      },
+      "renameByName": {}
+     }
+    }
+   ],
+   "options": {
+    "xField": "version",
+    "stacking": "normal",
+    "showValue": "never",
+    "orientation": "vertical",
+    "tooltip": {
+     "mode": "multi"
+    },
+    "legend": {
+     "showLegend": true,
+     "displayMode": "list",
+     "placement": "bottom"
+    }
+   },
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "fillOpacity": 90,
+      "lineWidth": 0
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "passed"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "green"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "failed"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "red"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "skipped"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "gray"
+        }
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": 9,
+   "type": "barchart",
+   "title": "Job duration per release (minutes)",
+   "datasource": {
+    "uid": "eg3hw0i7u8q2oa",
+    "type": "yesoreyeram-infinity-datasource"
+   },
+   "gridPos": {
+    "x": 15,
+    "y": 14,
+    "w": 9,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "uid": "eg3hw0i7u8q2oa",
+      "type": "yesoreyeram-infinity-datasource"
+     },
+     "type": "csv",
+     "format": "table",
+     "parser": "backend",
+     "root_selector": "",
+     "filters": [],
+     "csv_options": {},
+     "columns": [
+      {
+       "selector": "run_id",
+       "text": "run_id",
+       "type": "string"
+      },
+      {
+       "selector": "machine",
+       "text": "machine",
+       "type": "string"
+      },
+      {
+       "selector": "software",
+       "text": "software",
+       "type": "string"
+      },
+      {
+       "selector": "version",
+       "text": "version",
+       "type": "string"
+      },
+      {
+       "selector": "slurm_job_id",
+       "text": "slurm_job_id",
+       "type": "string"
+      },
+      {
+       "selector": "status",
+       "text": "status",
+       "type": "string"
+      },
+      {
+       "selector": "slurm_state",
+       "text": "slurm_state",
+       "type": "string"
+      },
+      {
+       "selector": "failure_summary",
+       "text": "failure_summary",
+       "type": "string"
+      },
+      {
+       "selector": "passed",
+       "text": "passed",
+       "type": "number"
+      },
+      {
+       "selector": "failed",
+       "text": "failed",
+       "type": "number"
+      },
+      {
+       "selector": "skipped",
+       "text": "skipped",
+       "type": "number"
+      },
+      {
+       "selector": "duration_min",
+       "text": "duration_min",
+       "type": "number"
+      },
+      {
+       "selector": "nodes",
+       "text": "nodes",
+       "type": "string"
+      },
+      {
+       "selector": "dragon_version",
+       "text": "dragon_version",
+       "type": "string"
+      },
+      {
+       "selector": "submitted_at",
+       "text": "submitted_at",
+       "type": "timestamp"
+      },
+      {
+       "selector": "ended_at",
+       "text": "ended_at",
+       "type": "timestamp"
+      },
+      {
+       "selector": "details_url",
+       "text": "details_url",
+       "type": "string"
+      },
+      {
+       "selector": "last_reported",
+       "text": "last_reported",
+       "type": "timestamp"
+      }
+     ],
+     "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai.csv",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     },
+     "source": "url"
+    }
+   ],
+   "transformations": [
+    {
+     "id": "organize",
+     "options": {
+      "excludeByName": {
+       "ended_at": true,
+       "machine": true,
+       "dragon_version": true,
+       "failure_summary": true,
+       "failed": true,
+       "skipped": true,
+       "last_reported": true,
+       "details_url": true,
+       "passed": true,
+       "slurm_job_id": true,
+       "test": true,
+       "run_id": true,
+       "submitted_at": true,
+       "details": true,
+       "slurm_state": true,
+       "nodes": true,
+       "software": true,
+       "status": true,
+       "error": true
+      },
+      "indexByName": {
+       "version": 0,
+       "duration_min": 1
+      },
+      "renameByName": {}
+     }
+    }
+   ],
+   "options": {
+    "xField": "version",
+    "showValue": "auto",
+    "tooltip": {
+     "mode": "single"
+    },
+    "legend": {
+     "showLegend": false
+    }
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "color": {
+      "mode": "fixed",
+      "fixedColor": "blue"
+     },
+     "custom": {
+      "fillOpacity": 85,
+      "lineWidth": 0
+     }
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 10,
+   "type": "table",
+   "title": "stellar-ai: runs, newest first",
+   "datasource": {
+    "uid": "eg3hw0i7u8q2oa",
+    "type": "yesoreyeram-infinity-datasource"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 22,
+    "w": 24,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "uid": "eg3hw0i7u8q2oa",
+      "type": "yesoreyeram-infinity-datasource"
+     },
+     "type": "csv",
+     "format": "table",
+     "parser": "backend",
+     "root_selector": "",
+     "filters": [],
+     "csv_options": {},
+     "columns": [
+      {
+       "selector": "run_id",
+       "text": "run_id",
+       "type": "string"
+      },
+      {
+       "selector": "machine",
+       "text": "machine",
+       "type": "string"
+      },
+      {
+       "selector": "software",
+       "text": "software",
+       "type": "string"
+      },
+      {
+       "selector": "version",
+       "text": "version",
+       "type": "string"
+      },
+      {
+       "selector": "slurm_job_id",
+       "text": "slurm_job_id",
+       "type": "string"
+      },
+      {
+       "selector": "status",
+       "text": "status",
+       "type": "string"
+      },
+      {
+       "selector": "slurm_state",
+       "text": "slurm_state",
+       "type": "string"
+      },
+      {
+       "selector": "failure_summary",
+       "text": "failure_summary",
+       "type": "string"
+      },
+      {
+       "selector": "passed",
+       "text": "passed",
+       "type": "number"
+      },
+      {
+       "selector": "failed",
+       "text": "failed",
+       "type": "number"
+      },
+      {
+       "selector": "skipped",
+       "text": "skipped",
+       "type": "number"
+      },
+      {
+       "selector": "duration_min",
+       "text": "duration_min",
+       "type": "number"
+      },
+      {
+       "selector": "nodes",
+       "text": "nodes",
+       "type": "string"
+      },
+      {
+       "selector": "dragon_version",
+       "text": "dragon_version",
+       "type": "string"
+      },
+      {
+       "selector": "submitted_at",
+       "text": "submitted_at",
+       "type": "timestamp"
+      },
+      {
+       "selector": "ended_at",
+       "text": "ended_at",
+       "type": "timestamp"
+      },
+      {
+       "selector": "details_url",
+       "text": "details_url",
+       "type": "string"
+      },
+      {
+       "selector": "last_reported",
+       "text": "last_reported",
+       "type": "timestamp"
+      }
+     ],
+     "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai.csv",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     },
+     "source": "url"
+    }
+   ],
+   "transformations": [
+    {
+     "id": "sortBy",
+     "options": {
+      "sort": [
+       {
+        "field": "submitted_at",
+        "desc": true
+       }
+      ]
+     }
+    },
+    {
+     "id": "organize",
+     "options": {
+      "excludeByName": {
+       "ended_at": true,
+       "machine": true,
+       "last_reported": true,
+       "duration_min": true,
+       "test": true,
+       "run_id": true,
+       "details": true,
+       "nodes": true,
+       "software": true,
+       "error": true
+      },
+      "indexByName": {
+       "status": 0,
+       "version": 1,
+       "failure_summary": 2,
+       "details_url": 3,
+       "slurm_state": 4,
+       "slurm_job_id": 5,
+       "passed": 6,
+       "failed": 7,
+       "skipped": 8,
+       "dragon_version": 9,
+       "submitted_at": 10
+      },
+      "renameByName": {}
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "status"
+      },
+      "properties": [
+       {
+        "id": "mappings",
+        "value": [
+         {
+          "type": "value",
+          "options": {
+           "PASSED": {
+            "color": "green",
+            "index": 0,
+            "text": "PASSED"
+           },
+           "RUNNING": {
+            "color": "yellow",
+            "index": 1,
+            "text": "RUNNING"
+           },
+           "PENDING": {
+            "color": "yellow",
+            "index": 2,
+            "text": "PENDING"
+           },
+           "FAILED": {
+            "color": "red",
+            "index": 3,
+            "text": "FAILED"
+           }
+          }
+         }
+        ]
+       },
+       {
+        "id": "custom.width",
+        "value": 100
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "color-background",
+         "mode": "basic"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "failure_summary"
+      },
+      "properties": [
+       {
+        "id": "displayName",
+        "value": "why it failed"
+       },
+       {
+        "id": "custom.width",
+        "value": 420
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "auto",
+         "wrapText": true
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "version"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 80
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "passed"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 70
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "failed"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 70
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "skipped"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 70
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "test"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 300
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "auto",
+         "wrapText": true
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "error"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 560
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "auto",
+         "wrapText": true
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "details"
+      },
+      "properties": [
+       {
+        "id": "displayName",
+        "value": "full output (hover, then click the eye)"
+       },
+       {
+        "id": "custom.inspect",
+        "value": true
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "details_url"
+      },
+      "properties": [
+       {
+        "id": "displayName",
+        "value": "logs"
+       },
+       {
+        "id": "custom.width",
+        "value": 70
+       },
+       {
+        "id": "links",
+        "value": [
+         {
+          "title": "Open logs and JUnit",
+          "url": "${__value.raw}",
+          "targetBlank": true
+         }
+        ]
+       },
+       {
+        "id": "mappings",
+        "value": [
+         {
+          "type": "regex",
+          "options": {
+           "pattern": ".+",
+           "result": {
+            "text": "open",
+            "index": 0
+           }
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": 11,
+   "type": "table",
+   "title": "stellar-ai: failed tests with their errors, newest first",
+   "datasource": {
+    "uid": "eg3hw0i7u8q2oa",
+    "type": "yesoreyeram-infinity-datasource"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 30,
+    "w": 24,
+    "h": 10
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "uid": "eg3hw0i7u8q2oa",
+      "type": "yesoreyeram-infinity-datasource"
+     },
+     "type": "csv",
+     "format": "table",
+     "parser": "backend",
+     "root_selector": "",
+     "filters": [],
+     "csv_options": {},
+     "columns": [
+      {
+       "selector": "run_id",
+       "text": "run_id",
+       "type": "string"
+      },
+      {
+       "selector": "machine",
+       "text": "machine",
+       "type": "string"
+      },
+      {
+       "selector": "version",
+       "text": "version",
+       "type": "string"
+      },
+      {
+       "selector": "slurm_job_id",
+       "text": "slurm_job_id",
+       "type": "string"
+      },
+      {
+       "selector": "test",
+       "text": "test",
+       "type": "string"
+      },
+      {
+       "selector": "error",
+       "text": "error",
+       "type": "string"
+      },
+      {
+       "selector": "details",
+       "text": "details",
+       "type": "string"
+      },
+      {
+       "selector": "details_url",
+       "text": "details_url",
+       "type": "string"
+      },
+      {
+       "selector": "submitted_at",
+       "text": "submitted_at",
+       "type": "timestamp"
+      }
+     ],
+     "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai-failures.csv",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     },
+     "source": "url"
+    }
+   ],
+   "transformations": [
+    {
+     "id": "sortBy",
+     "options": {
+      "sort": [
+       {
+        "field": "submitted_at",
+        "desc": true
+       }
+      ]
+     }
+    },
+    {
+     "id": "organize",
+     "options": {
+      "excludeByName": {
+       "ended_at": true,
+       "machine": true,
+       "dragon_version": true,
+       "failure_summary": true,
+       "failed": true,
+       "skipped": true,
+       "last_reported": true,
+       "passed": true,
+       "duration_min": true,
+       "run_id": true,
+       "submitted_at": true,
+       "slurm_state": true,
+       "nodes": true,
+       "software": true,
+       "status": true
+      },
+      "indexByName": {
+       "version": 0,
+       "slurm_job_id": 1,
+       "test": 2,
+       "error": 3,
+       "details": 4,
+       "details_url": 5
+      },
+      "renameByName": {}
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "status"
+      },
+      "properties": [
+       {
+        "id": "mappings",
+        "value": [
+         {
+          "type": "value",
+          "options": {
+           "PASSED": {
+            "color": "green",
+            "index": 0,
+            "text": "PASSED"
+           },
+           "RUNNING": {
+            "color": "yellow",
+            "index": 1,
+            "text": "RUNNING"
+           },
+           "PENDING": {
+            "color": "yellow",
+            "index": 2,
+            "text": "PENDING"
+           },
+           "FAILED": {
+            "color": "red",
+            "index": 3,
+            "text": "FAILED"
+           }
+          }
+         }
+        ]
+       },
+       {
+        "id": "custom.width",
+        "value": 100
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "color-background",
+         "mode": "basic"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "failure_summary"
+      },
+      "properties": [
+       {
+        "id": "displayName",
+        "value": "why it failed"
+       },
+       {
+        "id": "custom.width",
+        "value": 420
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "auto",
+         "wrapText": true
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "version"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 80
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "passed"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 70
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "failed"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 70
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "skipped"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 70
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "test"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 300
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "auto",
+         "wrapText": true
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "error"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 560
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "auto",
+         "wrapText": true
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "details"
+      },
+      "properties": [
+       {
+        "id": "displayName",
+        "value": "full output (hover, then click the eye)"
+       },
+       {
+        "id": "custom.inspect",
+        "value": true
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "details_url"
+      },
+      "properties": [
+       {
+        "id": "displayName",
+        "value": "logs"
+       },
+       {
+        "id": "custom.width",
+        "value": 70
+       },
+       {
+        "id": "links",
+        "value": [
+         {
+          "title": "Open logs and JUnit",
+          "url": "${__value.raw}",
+          "targetBlank": true
+         }
+        ]
+       },
+       {
+        "id": "mappings",
+        "value": [
+         {
+          "type": "regex",
+          "options": {
+           "pattern": ".+",
+           "result": {
+            "text": "open",
+            "index": 0
+           }
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  }
+ ],
+ "refresh": "5m",
+ "timezone": "utc",
+ "time": {
+  "from": "now-1h",
+  "to": "now"
+ }
+}
