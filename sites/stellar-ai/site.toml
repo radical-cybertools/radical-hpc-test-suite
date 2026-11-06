@@ -1,0 +1,27 @@
+# What hpc_monitor.py needs for this machine. Job settings live in dragon_suite.sbatch.
+
+machine = "stellar-ai"
+venv = "/home/aa1095/TEST-RHAPSODY/env-rhapsody-060"
+setup = ["module load openmpi/gcc/5.0.10"]  # mpi4py builds against this MPI
+
+[cdash]
+project = "RADICAL-HPC-Test-Suite-Sandbox"  # switch to RADICAL-HPC-Test-Suite at go-live
+track = "Experimental"
+
+[archive]
+enabled = false  # turn on at go-live, once a deploy key exists
+repo = "git@github.com:radical-cybertools/radical-hpc-test-suite.git"
+branch = "results"
+ssh_key = "~/.hpc-monitor/deploy_key"
+
+[[run]]
+name = "rhapsody-dragon"
+package = "rhapsody-py"
+job_script = "dragon_suite.sbatch"
+# Temporary: code and tests come from one RHAPSODY commit, which pins Dragon 0.15.0, until
+# a release does. The row shows the version main reports; slurm-job shows the commit.
+source_repo = "file:///home/aa1095/TEST-RHAPSODY/rhapsody"  # GitHub once the PR merges
+source_tag = "refactor/hpc-test-groups"  # main once the PR merges
+install = "{source_dir}[dragon]"
+extra_packages = ["pytest", "pytest-asyncio", "mpi4py"]
+require_versions = { dragonhpc = "0.15.0" }
