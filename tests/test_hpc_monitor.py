@@ -30,6 +30,11 @@ ONE_FAIL = """<?xml version="1.0"?><testsuites><testsuite tests="2">
 <testcase classname="t" name="a"/>
 <testcase classname="t" name="b"><failure message="TimeoutError: 0/1 tasks">trace</failure></testcase>
 </testsuite></testsuites>"""
+MIXED = """<?xml version="1.0"?><testsuites><testsuite tests="3">
+<testcase classname="t" name="a"/>
+<testcase classname="t" name="b"><failure message="TimeoutError: 0/1 tasks">trace</failure></testcase>
+<testcase classname="t" name="c"><skipped message="no GPU"/></testcase>
+</testsuite></testsuites>"""
 ONLY_SKIPS = """<?xml version="1.0"?><testsuites><testsuite tests="1">
 <testcase classname="t" name="a"><skipped message="no gpu"/></testcase></testsuite></testsuites>"""
 FAKE_VENV_PYTHON = """#!/bin/bash
@@ -538,39 +543,51 @@ class Publishing(Base):
         self.assertEqual(tuple(rows[0]), hpc_monitor.COLUMNS)
 
 
-    def failures(self, clone, machine="machine-a"):
-        with open(clone / "data" / f"{machine}-failures.csv", newline="") as handle:
+    def published_tests(self, clone, machine="machine-a"):
+        with open(clone / "data" / f"{machine}-tests.csv", newline="") as handle:
             return list(csv.DictReader(handle))
 
-    def test_each_failed_test_is_published_with_its_whole_error(self):
+    def test_every_test_is_published_with_failures_first(self):
+        self.finished_run("COMPLETED", MIXED)
+        _, clone = self.published()
+        rows = self.published_tests(clone)
+        self.assertEqual([(r["test"], r["result"]) for r in rows], [
+            ("t.b", "FAILED"), ("t.a", "PASSED"), ("t.c", "SKIPPED")])
+        self.assertEqual(rows[0]["error"], "TimeoutError: 0/1 tasks")
+        self.assertEqual(rows[2]["error"], "no GPU")
+
+    def test_newest_run_is_listed_first(self):
+        self.finished_run("COMPLETED", ALL_PASS)
+        self.clock[0] += 60
         self.finished_run("COMPLETED", ONE_FAIL)
         _, clone = self.published()
-        rows = self.failures(clone)
-        self.assertEqual([r["test"] for r in rows], ["t.b"])
-        self.assertEqual(rows[0]["error"], "TimeoutError: 0/1 tasks")
+        rows = self.published_tests(clone)
+        self.assertEqual(rows[0]["result"], "FAILED")
+        self.assertGreater(rows[0]["submitted_at"], rows[-1]["submitted_at"])
 
-    def test_passing_run_publishes_no_failures(self):
-        self.finished_run("COMPLETED", ALL_PASS)
-        _, clone = self.published()
-        self.assertEqual(self.failures(clone), [])
-
-    def test_run_killed_without_results_still_has_a_failure_row(self):
+    def test_run_killed_without_results_still_has_a_row(self):
         self.assertEqual(self.run_version(), 0)
         self.set_job("TIMEOUT")
         self.tick()
         _, clone = self.published()
-        rows = self.failures(clone)
-        self.assertEqual(rows[0]["test"], "(whole run)")
+        rows = self.published_tests(clone)
+        self.assertEqual((rows[0]["test"], rows[0]["result"]), ("(whole run)", "FAILED"))
         self.assertIn("TIMEOUT", rows[0]["error"])
 
-    def test_failures_survive_lost_state(self):
+    def test_missing_junit_still_lists_known_failures(self):
+        self.finished_run("COMPLETED", ONE_FAIL)
+        (pathlib.Path(self.record()["run_dir"]) / "junit.xml").unlink()
+        monitor = hpc_monitor.Monitor(hpc_monitor.load_config(self.site))
+        rows = monitor.test_rows(monitor.state["runs"][-1])
+        self.assertEqual([(r["test"], r["result"]) for r in rows], [("t.b", "FAILED")])
+
+    def test_test_list_survives_lost_state(self):
         self.finished_run("COMPLETED", ONE_FAIL)
         pathlib.Path(self.record()["run_dir"]).parent.parent.joinpath("state.json").unlink()
         self.assertEqual(self.tick(), 0)
-        hpc = hpc_monitor.load_config(self.site)
-        monitor = hpc_monitor.Monitor(hpc)
+        monitor = hpc_monitor.Monitor(hpc_monitor.load_config(self.site))
         clone = monitor.prepare_clone()
-        self.assertEqual([r["test"] for r in self.failures(clone)], ["t.b"])
+        self.assertEqual([r["test"] for r in self.published_tests(clone)], ["t.b", "t.a"])
 
     def test_failed_file_log_is_published_scrubbed(self):
         self.assertEqual(self.run_version(), 0)

@@ -170,6 +170,11 @@
          "color": "red",
          "index": 3,
          "text": "FAILED"
+        },
+        "SKIPPED": {
+         "color": "gray",
+         "index": 4,
+         "text": "SKIPPED"
         }
        }
       }
@@ -369,18 +374,19 @@
      "id": "organize",
      "options": {
       "excludeByName": {
-       "last_reported": true,
-       "ended_at": true,
-       "test": true,
-       "dragon_version": true,
        "run_id": true,
+       "duration_min": true,
+       "last_reported": true,
+       "error": true,
+       "result": true,
+       "dragon_version": true,
+       "failed": true,
        "passed": true,
        "software": true,
        "nodes": true,
-       "failed": true,
        "skipped": true,
-       "duration_min": true,
-       "error": true
+       "ended_at": true,
+       "test": true
       },
       "indexByName": {
        "status": 0,
@@ -430,6 +436,11 @@
             "color": "red",
             "index": 3,
             "text": "FAILED"
+           },
+           "SKIPPED": {
+            "color": "gray",
+            "index": 4,
+            "text": "SKIPPED"
            }
           }
          }
@@ -516,6 +527,60 @@
        {
         "id": "custom.width",
         "value": 70
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "result"
+      },
+      "properties": [
+       {
+        "id": "mappings",
+        "value": [
+         {
+          "type": "value",
+          "options": {
+           "PASSED": {
+            "color": "green",
+            "index": 0,
+            "text": "PASSED"
+           },
+           "RUNNING": {
+            "color": "yellow",
+            "index": 1,
+            "text": "RUNNING"
+           },
+           "PENDING": {
+            "color": "yellow",
+            "index": 2,
+            "text": "PENDING"
+           },
+           "FAILED": {
+            "color": "red",
+            "index": 3,
+            "text": "FAILED"
+           },
+           "SKIPPED": {
+            "color": "gray",
+            "index": 4,
+            "text": "SKIPPED"
+           }
+          }
+         }
+        ]
+       },
+       {
+        "id": "custom.width",
+        "value": 100
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "color-background",
+         "mode": "basic"
+        }
        }
       ]
      },
@@ -787,6 +852,11 @@
          "color": "red",
          "index": 3,
          "text": "FAILED"
+        },
+        "SKIPPED": {
+         "color": "gray",
+         "index": 4,
+         "text": "SKIPPED"
         }
        }
       }
@@ -1234,25 +1304,26 @@
      "id": "organize",
      "options": {
       "excludeByName": {
-       "status": true,
-       "ended_at": true,
-       "test": true,
-       "dragon_version": true,
        "run_id": true,
+       "duration_min": true,
+       "version": true,
+       "details_url": true,
+       "error": true,
+       "result": true,
+       "dragon_version": true,
+       "failed": true,
+       "submitted_at": true,
+       "machine": true,
        "passed": true,
        "failure_summary": true,
        "slurm_job_id": true,
-       "version": true,
-       "submitted_at": true,
        "software": true,
-       "slurm_state": true,
-       "details_url": true,
-       "machine": true,
        "nodes": true,
-       "failed": true,
        "skipped": true,
-       "duration_min": true,
-       "error": true
+       "ended_at": true,
+       "status": true,
+       "slurm_state": true,
+       "test": true
       },
       "indexByName": {
        "last_reported": 0
@@ -1406,22 +1477,23 @@
      "id": "organize",
      "options": {
       "excludeByName": {
-       "last_reported": true,
-       "status": true,
-       "ended_at": true,
-       "test": true,
-       "dragon_version": true,
        "run_id": true,
+       "duration_min": true,
+       "last_reported": true,
+       "details_url": true,
+       "error": true,
+       "result": true,
+       "dragon_version": true,
+       "submitted_at": true,
+       "machine": true,
        "failure_summary": true,
        "slurm_job_id": true,
-       "submitted_at": true,
        "software": true,
-       "slurm_state": true,
-       "details_url": true,
-       "machine": true,
        "nodes": true,
-       "duration_min": true,
-       "error": true
+       "ended_at": true,
+       "status": true,
+       "slurm_state": true,
+       "test": true
       },
       "indexByName": {
        "version": 0,
@@ -1635,24 +1707,25 @@
      "id": "organize",
      "options": {
       "excludeByName": {
-       "last_reported": true,
-       "status": true,
-       "ended_at": true,
-       "test": true,
-       "dragon_version": true,
        "run_id": true,
+       "last_reported": true,
+       "details_url": true,
+       "error": true,
+       "result": true,
+       "dragon_version": true,
+       "failed": true,
+       "submitted_at": true,
+       "machine": true,
        "passed": true,
        "failure_summary": true,
        "slurm_job_id": true,
-       "submitted_at": true,
        "software": true,
-       "slurm_state": true,
-       "details_url": true,
-       "machine": true,
        "nodes": true,
-       "failed": true,
        "skipped": true,
-       "error": true
+       "ended_at": true,
+       "status": true,
+       "slurm_state": true,
+       "test": true
       },
       "indexByName": {
        "version": 0,
@@ -1830,15 +1903,16 @@
      "id": "organize",
      "options": {
       "excludeByName": {
-       "last_reported": true,
-       "ended_at": true,
-       "test": true,
        "run_id": true,
-       "software": true,
-       "machine": true,
-       "nodes": true,
        "duration_min": true,
-       "error": true
+       "last_reported": true,
+       "error": true,
+       "result": true,
+       "machine": true,
+       "software": true,
+       "nodes": true,
+       "ended_at": true,
+       "test": true
       },
       "indexByName": {
        "status": 0,
@@ -1891,6 +1965,11 @@
             "color": "red",
             "index": 3,
             "text": "FAILED"
+           },
+           "SKIPPED": {
+            "color": "gray",
+            "index": 4,
+            "text": "SKIPPED"
            }
           }
          }
@@ -1977,6 +2056,60 @@
        {
         "id": "custom.width",
         "value": 70
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "result"
+      },
+      "properties": [
+       {
+        "id": "mappings",
+        "value": [
+         {
+          "type": "value",
+          "options": {
+           "PASSED": {
+            "color": "green",
+            "index": 0,
+            "text": "PASSED"
+           },
+           "RUNNING": {
+            "color": "yellow",
+            "index": 1,
+            "text": "RUNNING"
+           },
+           "PENDING": {
+            "color": "yellow",
+            "index": 2,
+            "text": "PENDING"
+           },
+           "FAILED": {
+            "color": "red",
+            "index": 3,
+            "text": "FAILED"
+           },
+           "SKIPPED": {
+            "color": "gray",
+            "index": 4,
+            "text": "SKIPPED"
+           }
+          }
+         }
+        ]
+       },
+       {
+        "id": "custom.width",
+        "value": 100
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "color-background",
+         "mode": "basic"
+        }
        }
       ]
      },
@@ -2073,7 +2206,7 @@
   {
    "id": 11,
    "type": "table",
-   "title": "stellar-ai: failed tests with their errors, newest first",
+   "title": "stellar-ai: all tests, newest run first, failures first",
    "datasource": {
     "uid": "eg3hw0i7u8q2oa",
     "type": "yesoreyeram-infinity-datasource"
@@ -2082,7 +2215,7 @@
     "x": 0,
     "y": 30,
     "w": 24,
-    "h": 10
+    "h": 14
    },
    "targets": [
     {
@@ -2124,6 +2257,11 @@
        "type": "string"
       },
       {
+       "selector": "result",
+       "text": "result",
+       "type": "string"
+      },
+      {
        "selector": "error",
        "text": "error",
        "type": "string"
@@ -2139,7 +2277,7 @@
        "type": "timestamp"
       }
      ],
-     "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai-failures.csv",
+     "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai-tests.csv",
      "url_options": {
       "method": "GET",
       "data": ""
@@ -2149,42 +2287,32 @@
    ],
    "transformations": [
     {
-     "id": "sortBy",
-     "options": {
-      "sort": [
-       {
-        "field": "submitted_at",
-        "desc": true
-       }
-      ]
-     }
-    },
-    {
      "id": "organize",
      "options": {
       "excludeByName": {
-       "last_reported": true,
-       "status": true,
-       "ended_at": true,
-       "dragon_version": true,
        "run_id": true,
+       "duration_min": true,
+       "last_reported": true,
+       "dragon_version": true,
+       "failed": true,
+       "submitted_at": true,
+       "machine": true,
        "passed": true,
        "failure_summary": true,
-       "submitted_at": true,
        "software": true,
-       "slurm_state": true,
-       "machine": true,
        "nodes": true,
-       "failed": true,
        "skipped": true,
-       "duration_min": true
+       "ended_at": true,
+       "status": true,
+       "slurm_state": true
       },
       "indexByName": {
        "version": 0,
        "slurm_job_id": 1,
-       "test": 2,
-       "error": 3,
-       "details_url": 4
+       "result": 2,
+       "test": 3,
+       "error": 4,
+       "details_url": 5
       },
       "renameByName": {}
      }
@@ -2224,6 +2352,11 @@
             "color": "red",
             "index": 3,
             "text": "FAILED"
+           },
+           "SKIPPED": {
+            "color": "gray",
+            "index": 4,
+            "text": "SKIPPED"
            }
           }
          }
@@ -2310,6 +2443,60 @@
        {
         "id": "custom.width",
         "value": 70
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "result"
+      },
+      "properties": [
+       {
+        "id": "mappings",
+        "value": [
+         {
+          "type": "value",
+          "options": {
+           "PASSED": {
+            "color": "green",
+            "index": 0,
+            "text": "PASSED"
+           },
+           "RUNNING": {
+            "color": "yellow",
+            "index": 1,
+            "text": "RUNNING"
+           },
+           "PENDING": {
+            "color": "yellow",
+            "index": 2,
+            "text": "PENDING"
+           },
+           "FAILED": {
+            "color": "red",
+            "index": 3,
+            "text": "FAILED"
+           },
+           "SKIPPED": {
+            "color": "gray",
+            "index": 4,
+            "text": "SKIPPED"
+           }
+          }
+         }
+        ]
+       },
+       {
+        "id": "custom.width",
+        "value": 100
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "color-background",
+         "mode": "basic"
+        }
        }
       ]
      },

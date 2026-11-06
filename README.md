@@ -31,7 +31,7 @@ A status change appears within about 25 minutes: up to 15 for the next tick, abo
 | Where | What it shows |
 |---|---|
 | "why it failed" column | One line: the first failed test and how many more |
-| "failed tests" table in the machine's section | Every failed test with its error |
+| "all tests" table in the machine's section | Every test that ran, with its result and any error or skip reason, newest run first and failures first |
 | `logs` link | The run's folder: tracebacks in `junit.xml`, job output in `log_tail.txt` and a log per failed file, plus `summary.json` |
 
 **If a machine stops reporting,** its rows keep their last status. Check "Last report" in its section: an idle machine updates that once a day.
@@ -69,7 +69,7 @@ Everything goes in `data/` on the `results` branch. That branch holds only data,
 | Path | Contents |
 |---|---|
 | `data/<machine>.csv` | One row per run |
-| `data/<machine>-failures.csv` | One row per failed test, with its error |
+| `data/<machine>-tests.csv` | One row per test in each finished run, with its result and any error or skip reason |
 | `data/runs/<machine>/<software>/<version>/<job>/` | `junit.xml`, `log_tail.txt`, `<file>.log` for each failed file, `summary.json` |
 
 Everything published is public. Logs are scrubbed of usernames, home paths, and secret-looking values, but the scrubbing is pattern-based, so don't print secrets in job output.

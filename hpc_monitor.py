@@ -55,9 +55,11 @@ COLUMNS = (
     "failure_summary", "passed", "failed", "skipped", "duration_min", "nodes",
     "dragon_version", "submitted_at", "ended_at", "details_url", "last_reported",
 )
-FAILURE_COLUMNS = (
-    "run_id", "machine", "version", "slurm_job_id", "test", "error", "details_url", "submitted_at",
+TEST_COLUMNS = (
+    "run_id", "machine", "version", "slurm_job_id", "test", "result", "error", "details_url",
+    "submitted_at",
 )
+RESULT_ORDER = {"FAILED": 0, "PASSED": 1, "SKIPPED": 2}
 MAX_SUMMARY_CHARS = 300
 MAX_ERROR_CHARS = 2000
 MAX_JUNIT_BYTES = 5 * 1024 * 1024
@@ -156,6 +158,22 @@ def parse_junit(path):
             "message": message,
         })
     return tests, skipped
+
+
+def junit_cases(path):
+    """Return every test in a JUnit file with its result and its error or skip reason."""
+    cases = []
+    for case in ET.parse(path).getroot().iter("testcase"):
+        problems = [e for e in case if e.tag in ("failure", "error")]
+        skips = case.findall("skipped")
+        detail = next(iter(problems + skips), None)
+        error = "" if detail is None else (detail.get("message") or detail.text or "")
+        cases.append({
+            "test": ".".join(part for part in (case.get("classname"), case.get("name")) if part),
+            "result": "FAILED" if problems else "SKIPPED" if skips else "PASSED",
+            "error": error,
+        })
+    return cases
 
 
 def decide(job, junit_path):
@@ -619,34 +637,41 @@ class Monitor:
         }
         return {k: "" if v is None else str(v) for k, v in values.items()}
 
-    def failure_rows(self, run):
-        """One row per failed test, with its whole error, or one row if no test can be named."""
+    def test_rows(self, run):
+        """One row per test in a finished run, or one row if a failed run names no test."""
         verdict = run.get("verdict") or {}
-        if not verdict or verdict["ok"]:
+        if not verdict:
             return []
         row = self.row(run)
         common = {k: row[k] for k in ("run_id", "machine", "version", "slurm_job_id",
                                       "details_url", "submitted_at")}
-        rows = []
-        for test in verdict["failed_tests"]:
-            output = scrub(test["output"]).strip()
-            message = scrub(test.get("message", "")).strip() or output.partition("\n")[0]
-            rows.append(common | {"test": test["name"], "error": message[:MAX_ERROR_CHARS]})
-        return rows or [common | {"test": "(whole run)", "error": verdict["summary"]}]
+        try:
+            cases = junit_cases(pathlib.Path(run["run_dir"]) / "junit.xml")
+        except (OSError, ET.ParseError):
+            # The JUnit file is gone or damaged, so only the failures are still known.
+            cases = [{"test": t["name"], "result": "FAILED",
+                      "error": t.get("message") or t["output"].partition("\n")[0]}
+                     for t in verdict["failed_tests"]]
+        if not cases and not verdict["ok"]:
+            cases = [{"test": "(whole run)", "result": "FAILED", "error": verdict["summary"]}]
+        return [common | case | {"error": scrub(case["error"]).strip()[:MAX_ERROR_CHARS]}
+                for case in cases]
 
-    def write_failures(self, path):
-        """Rebuild this machine's failures, keeping runs that lost state no longer knows."""
+    def write_tests(self, path):
+        """Rebuild this machine's test list, keeping runs that lost state no longer knows."""
         known = {run["run_id"] for run in self.state["runs"]}
         rows = []
         if path.exists():
             with open(path, newline="") as handle:
                 rows = [r for r in csv.DictReader(handle) if r["run_id"] not in known]
         for run in self.state["runs"]:
-            rows += self.failure_rows(run)
-        rows.sort(key=lambda r: r["submitted_at"])
+            rows += self.test_rows(run)
+        # Newest run first and, within a run, failures first.
+        rows.sort(key=lambda r: (RESULT_ORDER.get(r["result"], 0), r["test"]))
+        rows.sort(key=lambda r: r["submitted_at"], reverse=True)
         path.parent.mkdir(parents=True, exist_ok=True)
         with open(path, "w", newline="") as handle:
-            writer = csv.DictWriter(handle, FAILURE_COLUMNS, extrasaction="ignore",
+            writer = csv.DictWriter(handle, TEST_COLUMNS, extrasaction="ignore",
                                     lineterminator="\n")
             writer.writeheader()
             writer.writerows(rows)
@@ -791,7 +816,7 @@ class Monitor:
                 self.write_artifacts(clone, run)
             if changed or heartbeat_due or not path.exists():
                 self.write_csv(path, rows)
-            self.write_failures(path.with_name(f"{self.site}-failures.csv"))
+            self.write_tests(path.with_name(f"{self.site}-tests.csv"))
             self.git(clone, "add", "-A")
             if self.git(clone, "status", "--porcelain").strip():
                 self.git(clone, "commit", "--quiet", "-m", self.commit_message(rows))

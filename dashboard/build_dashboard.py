@@ -7,7 +7,7 @@ Adding a machine means rerunning this with one more --machine.
     build_dashboard.py --datasource <uid> --out hpc-monitor.json \
         --machine stellar-ai=https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai.csv
 
-Each machine's failed tests are read from the same place, from <machine>-failures.csv.
+Each machine's test list is read from the same place, from <machine>-tests.csv.
 
 A --machine value that is a local file is embedded in the dashboard instead of fetched. Use
 that only before the public data repo exists. --push sends the result to a Grafana stack.
@@ -23,12 +23,14 @@ COLUMNS = (
     "failure_summary", "passed", "failed", "skipped", "duration_min", "nodes",
     "dragon_version", "submitted_at", "ended_at", "details_url", "last_reported",
 )
-FAILURE_COLUMNS = (
-    "run_id", "machine", "version", "slurm_job_id", "test", "error", "details_url", "submitted_at",
+TEST_COLUMNS = (
+    "run_id", "machine", "version", "slurm_job_id", "test", "result", "error", "details_url",
+    "submitted_at",
 )
 NUMBERS = {"passed", "failed", "skipped", "duration_min"}
 TIMES = {"submitted_at", "ended_at", "last_reported"}
-STATUS_COLORS = {"PASSED": "green", "RUNNING": "yellow", "PENDING": "yellow", "FAILED": "red"}
+STATUS_COLORS = {"PASSED": "green", "RUNNING": "yellow", "PENDING": "yellow", "FAILED": "red",
+                 "SKIPPED": "gray"}
 STATUS_MAP = [{"type": "value", "options": {
     name: {"color": color, "index": index, "text": name}
     for index, (name, color) in enumerate(STATUS_COLORS.items())
@@ -75,7 +77,7 @@ class Builder:
 
 def keep(*names):
     return {"id": "organize", "options": {
-        "excludeByName": {c: True for c in {*COLUMNS, *FAILURE_COLUMNS} if c not in names},
+        "excludeByName": {c: True for c in {*COLUMNS, *TEST_COLUMNS} if c not in names},
         "indexByName": {name: i for i, name in enumerate(names)}, "renameByName": {},
     }}
 
@@ -98,6 +100,8 @@ def table_fields():
         override("passed", ("custom.width", 70)),
         override("failed", ("custom.width", 70)),
         override("skipped", ("custom.width", 70)),
+        override("result", ("mappings", STATUS_MAP), ("custom.width", 100),
+                 ("custom.cellOptions", {"type": "color-background", "mode": "basic"})),
         override("slurm_job_id", ("custom.width", 110)),
         override("test", ("custom.width", 360),
                  ("custom.cellOptions", {"type": "auto", "wrapText": True})),
@@ -137,8 +141,8 @@ def duration_chart(builder, x, y, w, h, target):
     )
 
 
-def failures_source(source):
-    return source.removesuffix(".csv") + "-failures.csv"
+def tests_source(source):
+    return source.removesuffix(".csv") + "-tests.csv"
 
 
 def build(machines, datasource, uid, title):
@@ -204,14 +208,14 @@ def build(machines, datasource, uid, title):
                 fieldConfig=table_fields(),
             ),
             builder.panel(
-                "table", f"{name}: failed tests with their errors, newest first",
-                0, y + 16, 24, 10, [builder.query("A", failures_source(source), FAILURE_COLUMNS)],
-                transformations=[newest_first(), keep(
-                    "version", "slurm_job_id", "test", "error", "details_url")],
+                "table", f"{name}: all tests, newest run first, failures first",
+                0, y + 16, 24, 14, [builder.query("A", tests_source(source), TEST_COLUMNS)],
+                transformations=[keep(
+                    "version", "slurm_job_id", "result", "test", "error", "details_url")],
                 fieldConfig=table_fields(),
             ),
         ]
-        y += 26
+        y += 30
     return {"uid": uid, "title": title, "schemaVersion": 39, "panels": panels, "refresh": "5m",
             "timezone": "utc", "time": {"from": "now-1h", "to": "now"}}
 
