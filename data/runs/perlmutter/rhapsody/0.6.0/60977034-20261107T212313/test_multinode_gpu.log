@@ -1,0 +1,148 @@
+kj/filesystem-disk-unix.c++:1734: warning: PWD environment variable doesn't match current directory; pwd = ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.6.0-20261107T212313
+Network Config Error Detected: kj/filesystem-disk-unix.c++:1734: warning: PWD environment variable doesn't match current directory; pwd = ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.6.0-20261107T212313
+Network Config Error Detected: kj/filesystem-disk-unix.c++:1734: warning: PWD environment variable doesn't match current directory; pwd = ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.6.0-20261107T212313
+kj/filesystem-disk-unix.c++:1734: warning: PWD environment variable doesn't match current directory; pwd = ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.6.0-20261107T212313
+kj/filesystem-disk-unix.c++:1734: warning: PWD environment variable doesn't match current directory; pwd = ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.6.0-20261107T212313
+kj/filesystem-disk-unix.c++:1734: warning: PWD environment variable doesn't match current directory; pwd = ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.6.0-20261107T212313
+kj/filesystem-disk-unix.c++:1734: warning: PWD environment variable doesn't match current directory; pwd = ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.6.0-20261107T212313
+kj/filesystem-disk-unix.c++:1734: warning: PWD environment variable doesn't match current directory; pwd = ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.6.0-20261107T212313
+kj/filesystem-disk-unix.c++:1734: warning: PWD environment variable doesn't match current directory; pwd = ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.6.0-20261107T212313
+kj/filesystem-disk-unix.c++:1734: warning: PWD environment variable doesn't match current directory; pwd = ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.6.0-20261107T212313
+kj/filesystem-disk-unix.c++:1734: warning: PWD environment variable doesn't match current directory; pwd = ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.6.0-20261107T212313
+kj/filesystem-disk-unix.c++:1734: warning: PWD environment variable doesn't match current directory; pwd = ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.6.0-20261107T212313
+============================= test session starts ==============================
+platform linux -- Python 3.12.12, pytest-9.2.0, pluggy-1.7.0 -- ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.6.0-20261107T212313/venv/bin/python3
+cachedir: .pytest_cache
+rootdir: ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.6.0-20261107T212313/source/tests/integration/test-hpc/dragon
+configfile: pytest.ini
+plugins: asyncio-1.4.1.post1, typeguard-4.6.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=module, asyncio_default_test_loop_scope=module
+collecting ... collected 3 items
+
+../source/tests/integration/test-hpc/dragon/test_multinode_gpu.py::test_one_task_per_node 
+-------------------------------- live log setup --------------------------------
+INFO     api_setup:api_setup.py:322 connecting to infrastructure from 803984
+INFO     api_setup:api_setup.py:360 debug entry hooked
+ERROR                                                                    [ 33%]
+../source/tests/integration/test-hpc/dragon/test_multinode_gpu.py::test_one_task_per_gpu_across_nodes ERROR [ 66%]
+../source/tests/integration/test-hpc/dragon/test_multinode_gpu.py::test_concurrent_submission_all_nodes ERROR [100%]
+
+==================================== ERRORS ====================================
+___________________ ERROR at setup of test_one_task_per_node ___________________
+
+self = <Coroutine test_one_task_per_node>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.6.0-20261107T212313/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:559: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.6.0-20261107T212313/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:927: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    @pytest.fixture(scope="session")
+    def topology():
+        """Detect nodes and GPUs from the live Dragon allocation.
+    
+        Returns a list of dicts, one per node:
+            [{"huid": int, "hostname": str, "gpus": [int, ...], "num_gpus": int}, ...]
+    
+        Raises RuntimeError if Dragon is not initialised.
+        """
+        from dragon.native.machine import Node
+        from dragon.native.machine import System
+    
+        nodes = []
+        for huid in System().nodes:
+            node = Node(huid)
+>           gpu_ids = list(node.gpus)
+                      ^^^^^^^^^^^^^^^
+E           TypeError: 'Noxture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.6.0-20261107T212313/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:559: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    @pytest.fixture(scope="session")
+    def topology():
+        """Detect nodes and GPUs from the live Dragon allocation.
+    
+        Returns a list of dicts, one per node:
+            [{"huid": int, "hostname": str, "gpus": [int, ...], "num_gpus": int}, ...]
+    
+        Raises RuntimeError if Dragon is not initialised.
+        """
+        from dragon.native.machine import Node
+        from dragon.native.machine import System
+    
+        nodes = []
+        for huid in System().nodes:
+            node = Node(huid)
+>           gpu_ids = list(node.gpus)
+                      ^^^^^^^^^^^^^^^
+E           TypeError: 'NoneType' object is not iterable
+
+../source/tests/integration/test-hpc/dragon/conftest.py:52: TypeError
+____________ ERROR at setup of test_concurrent_submission_all_nodes ____________
+
+self = <Coroutine test_concurrent_submission_all_nodes>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.6.0-20261107T212313/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:559: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    @pytest.fixture(scope="session")
+    def topology():
+        """Detect nodes and GPUs from the live Dragon allocation.
+    
+        Returns a list of dicts, one per node:
+            [{"huid": int, "hostname": str, "gpus": [int, ...], "num_gpus": int}, ...]
+    
+        Raises RuntimeError if Dragon is not initialised.
+        """
+        from dragon.native.machine import Node
+        from dragon.native.machine import System
+    
+        nodes = []
+        for huid in System().nodes:
+            node = Node(huid)
+>           gpu_ids = list(node.gpus)
+                      ^^^^^^^^^^^^^^^
+E           TypeError: 'NoneType' object is not iterable
+
+../source/tests/integration/test-hpc/dragon/conftest.py:52: TypeError
+- generated xml file: ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.6.0-20261107T212313/groups/test_multinode_gpu.xml -
+=========================== short test summary info ============================
+ERROR ../source/tests/integration/test-hpc/dragon/test_multinode_gpu.py::test_one_task_per_node
+ERROR ../source/tests/integration/test-hpc/dragon/test_multinode_gpu.py::test_one_task_per_gpu_across_nodes
+ERROR ../source/tests/integration/test-hpc/dragon/test_multinode_gpu.py::test_concurrent_submission_all_nodes
+============================== 3 errors in 2.51s ===============================

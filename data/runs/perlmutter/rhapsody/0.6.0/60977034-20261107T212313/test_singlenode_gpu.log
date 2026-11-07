@@ -1,0 +1,200 @@
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.6.0-20261107T212313/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:559: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    @pytest.fixture(scope="session")
+    def topology():
+        """Detect nodes and GPUs from the live Dragon allocation.
+    
+        Returns a list of dicts, one per node:
+            [{"huid": int, "hostname": str, "gpus": [int, ...], "num_gpus": int}, ...]
+    
+        Raises RuntimeError if Dragon is not initialised.
+        """
+        from dragon.native.machine import Node
+        from dragon.native.machine import System
+    
+        nodes = []
+        for huid in System().nodes:
+            node = Node(huid)
+>           gpu_ids = list(node.gpus)
+                      ^^^^^^^^^^^^^^^
+E           TypeError: 'NoneType' object is not iterable
+
+../source/tests/integration/test-hpc/dragon/conftest.py:52: TypeError
+_________________ ERROR at setup of test_function_return_value _________________
+
+self = <Coroutine test_function_return_value>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.6.0-20261107T212313/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:559: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    @pytest.fixture(scope="session")
+    def topology():
+        """Detect nodes and GPUs from the live Dragon allocation.
+    
+        Returns a list of dicts, one per node:
+            [{"huid": int, "hostname": str, "gpus": [int, ...], "num_gpus": int}, ...]
+    
+        Raises RuntimeError if Dragon is not initialised.
+        """
+        from dragon.native.machine import Node
+        from dragon.native.machine import System
+    
+        nodes = []
+        for huid in System().nodes:
+            node = Node(huid)
+>           gpu_ids = list(node.gpus)
+                      ^^^^^^^^^^^^^^^
+E           TypeError: 'NoneType' object is not iterable
+
+../source/tests/integration/test-hpc/dragon/conftest.py:52: TypeError
+_____ ERROR at setup of test_multiple_function_tasks_return_correct_values _____
+
+self = <Coroutine test_multiple_function_tasks_return_correct_values>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.6.0-20261107T212313/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:559: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    @pytest.fixture(scope="session")
+    def topology():
+        """Detect nodes and GPUs from the live Dragon allocation.
+    
+        Returns a list of dicts, one per node:
+            [{"huid": int, "hostname": str, "gpus": [int, ...], "num_gpus": int}, ...]
+    
+        Raises RuntimeError if Dragon is not initialised.
+        """
+        from dragon.native.machine import Node
+        from dragon.native.machine import System
+    
+        nodes = []
+        for huid in System().nodes:
+            node = Node(huid)
+>           gpu_ids = list(node.gpus)
+                      ^^^^^^^^^^^^^^^
+E           TypeError: 'NoneType' object is not iterable
+
+../source/tests/integration/test-hpc/dragon/conftest.py:52: TypeError
+___________ ERROR at setup of test_single_gpu_affinity_on_first_node ___________
+
+self = <Coroutine test_single_gpu_affinity_on_first_node>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.6.0-20261107T212313/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:559: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    @pytest.fixture(scope="session")
+    def topology():
+        """Detect nodes and GPUs from the live Dragon allocation.
+    
+        Returns a list of dicts, one per node:
+            [{"huid": int, "hostname": str, "gpus": [int, ...], "num_gpus": int}, ...]
+    
+        Raises RuntimeError if Dragon is not initialised.
+        """
+        from dragon.native.machine import Node
+        from dragon.native.machine import System
+    
+        nodes = []
+        for huid in System().nodes:
+            node = Node(huid)
+>           gpu_ids = list(node.gpus)
+                      ^^^^^^^^^^^^^^^
+E           TypeError: 'NoneType' object is not iterable
+
+../source/tests/integration/test-hpc/dragon/conftest.py:52: TypeError
+________________ ERROR at setup of test_all_gpus_on_first_node _________________
+
+self = <Coroutine test_all_gpus_on_first_node>
+
+    def setup(self) -> None:
+        runner_fixture_id = f"_{self._loop_scope}_scoped_runner"
+        if runner_fixture_id not in self.fixturenames:
+            self.fixturenames.append(runner_fixture_id)
+        # When loop factories are configured, resolve the loop factory
+        # fixture early so that a factory variant change cascades cache
+        # invalidation before any async fixture checks its cache.
+        hook_caller = self.config.hook.pytest_asyncio_loop_factories
+        if hook_caller.get_hookimpls():
+            _ = self._request.getfixturevalue(_asyncio_loop_factory.__name__)
+>       return super().setup()
+               ^^^^^^^^^^^^^^^
+
+~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.6.0-20261107T212313/venv/lib/python3.12/site-packages/pytest_asyncio/plugin.py:559: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    @pytest.fixture(scope="session")
+    def topology():
+        """Detect nodes and GPUs from the live Dragon allocation.
+    
+        Returns a list of dicts, one per node:
+            [{"huid": int, "hostname": str, "gpus": [int, ...], "num_gpus": int}, ...]
+    
+        Raises RuntimeError if Dragon is not initialised.
+        """
+        from dragon.native.machine import Node
+        from dragon.native.machine import System
+    
+        nodes = []
+        for huid in System().nodes:
+            node = Node(huid)
+>           gpu_ids = list(node.gpus)
+                      ^^^^^^^^^^^^^^^
+E           TypeError: 'NoneType' object is not iterable
+
+../source/tests/integration/test-hpc/dragon/conftest.py:52: TypeError
+- generated xml file: ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.6.0-20261107T212313/groups/test_singlenode_gpu.xml -
+=========================== short test summary info ============================
+ERROR ../source/tests/integration/test-hpc/dragon/test_singlenode_gpu.py::test_executable_pinned_to_first_node
+ERROR ../source/tests/integration/test-hpc/dragon/test_singlenode_gpu.py::test_executable_echo_on_first_node
+ERROR ../source/tests/integration/test-hpc/dragon/test_singlenode_gpu.py::test_function_return_value
+ERROR ../source/tests/integration/test-hpc/dragon/test_singlenode_gpu.py::test_multiple_function_tasks_return_correct_values
+ERROR ../source/tests/integration/test-hpc/dragon/test_singlenode_gpu.py::test_single_gpu_affinity_on_first_node
+ERROR ../source/tests/integration/test-hpc/dragon/test_singlenode_gpu.py::test_all_gpus_on_first_node
+============================== 6 errors in 2.71s ===============================
