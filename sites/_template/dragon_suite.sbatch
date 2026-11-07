@@ -14,6 +14,11 @@
 
 set -euo pipefail
 
+# When this job ends, the login node publishes its results. See jobs/publish_after_job.sh.
+export HPC_MONITOR_LOGIN_HOST=<login-host>
+trap 'bash "$HPC_MONITOR_REPO_DIR/jobs/publish_after_job.sh" || true' EXIT
+trap 'exit 143' TERM
+
 source "$HPC_MONITOR_VENV/bin/activate"
 
 # Scale tests are off unless this is set.

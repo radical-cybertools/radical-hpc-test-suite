@@ -1,8 +1,9 @@
 # RADICAL HPC test suite monitor
 
-Tests each new RHAPSODY release once a month on HPC machines, and shows the results on a public Grafana dashboard. Results are public, and the live schedule runs the code from this checkout.
+Tests each new RHAPSODY release on HPC machines, and shows the results on a public Grafana dashboard. Results are public, and the live schedule runs the code from this checkout.
 
 - **Before any design change, read `docs/ARCHITECTURE.md`.** It has the hard constraints and invariants.
+- **For how it runs, read `docs/how-it-works.md`.** It defines tick, release check, and test job.
 - **To connect a machine, use `/add-machine`,** which follows `docs/adding-a-machine.md`.
 
 ## Commands
@@ -11,6 +12,7 @@ Tests each new RHAPSODY release once a month on HPC machines, and shows the resu
 python3 -m unittest discover -s tests                                   # offline; uses no allocation
 python3 hpc_monitor.py run --site sites/<machine>/site.toml --version <version> --dry-run
 python3 hpc_monitor.py tick --site sites/<machine>/site.toml            # needs approval: can submit and publish
+python3 hpc_monitor.py tick --results-only --site sites/<machine>/site.toml  # needs approval: publishes, never submits
 python3 dashboard/build_dashboard.py --help
 ```
 

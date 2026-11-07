@@ -1,6 +1,6 @@
 # Adding a new machine
 
-This guide connects an HPC machine to the monitor. When you finish, the machine tests each new RHAPSODY release once a month and shows its results in its own section of the public dashboard.
+This guide connects an HPC machine to the monitor. When you finish, the machine tests each new RHAPSODY release and shows its results in its own section of the public dashboard.
 
 Plan for about an hour of setup, plus however long the first job waits in the queue.
 
@@ -98,7 +98,7 @@ setup = ["module load <your MPI module>"]    # runs before installing; mpi4py bu
 
 Leave `[publish]` and `[[run]]` as they are, unless step 3 gave you a differently named key. If the machine has no MPI to build against, remove `mpi4py` from `extra_packages`. The MPI tests then skip themselves.
 
-**`sites/<machine>/dragon_suite.sbatch`:** fill in `--account`, `--partition`, `--qos`, and `--gpus-per-node`, and add the same `module load` line.
+**`sites/<machine>/dragon_suite.sbatch`:** fill in `--account`, `--partition`, `--qos`, and `--gpus-per-node`, and add the same `module load` line. Set `HPC_MONITOR_LOGIN_HOST` to a login node's name, which the job uses to ask for its results to be published as it ends.
 
 If a connected machine has similar hardware, start from its job script. For example, `sites/stellar-ai/dragon_suite.sbatch` shows the options that machine needed:
 
@@ -107,6 +107,8 @@ If a connected machine has similar hardware, start from its job script. For exam
 | `--exclusive` | Other jobs could share your nodes. If you're unsure, add it; the job then gets whole nodes to itself |
 | `-t tcp` on the launcher line | The machine's high-speed network doesn't work with Dragon |
 | `--network-prefix '<regex>'` | Dragon can't find the right network interfaces |
+
+If jobs can't `ssh` to a login node on this machine, leave `HPC_MONITOR_LOGIN_HOST` empty. Results then wait for the next scheduled tick, up to about 2 weeks later, or for someone to run `tick --results-only`. Tell the project owner, because a direct route may be worth adding.
 
 You can't check the launcher options without running a job, so the first run may need a fix and a rerun.
 
@@ -134,7 +136,7 @@ The dry run only prints the plan. It doesn't test the deploy key, the `module lo
 
 ## Step 6: Run a baseline
 
-This is required. The first time a machine sees a release, the monthly check only records it, because a run spends allocation. Without a baseline, the machine shows nothing until the next new release.
+This is required. The first time a machine sees a release, the release check only records it, because a run spends allocation. Without a baseline, the machine shows nothing until the next new release.
 
 ```bash
 python3 hpc_monitor.py run --site sites/<machine>/site.toml --version <version>
@@ -142,7 +144,7 @@ python3 hpc_monitor.py run --site sites/<machine>/site.toml --version <version>
 
 This spends allocation. It builds a fresh environment, clones the tests from the release tag, submits the job, and publishes the first status publicly to the `results` branch.
 
-If the queue is long, you can carry on with steps 7 and 8, and the schedule will follow the job from there. Otherwise, run a tick to follow it until it ends:
+The job publishes its own results about 2 minutes after it ends, if it can reach the login node. To check on it, or if results don't appear:
 
 ```bash
 squeue -u $USER
@@ -170,7 +172,7 @@ This clone uses HTTPS, so the push needs your own GitHub login. The deploy key i
 
 ## Step 8: Install the schedule
 
-The tick must run about every 15 minutes, and each tick exits within seconds when there's nothing to do. Use the row that matches the machine. If more than one fits, prefer SSH, the only one tested:
+The schedule runs a tick on the 1st and 15th of each month, and each tick exits within seconds when there's nothing to do. Use the row that matches the machine. If more than one fits, prefer SSH, the only one tested:
 
 | Option | Use it when | Status |
 |---|---|---|
@@ -216,11 +218,21 @@ rm /tmp/scrontab.$USER
 scrontab -l
 ```
 
-After the next quarter hour, confirm a tick ran:
+A broken schedule could otherwise go unnoticed for 2 weeks, so test it with one tick right away. Install a temporary copy that runs every 5 minutes, using your merged file if you made one:
 
 ```bash
-tail ~/.hpc-monitor-grafana/<machine>/monitor.log
-tail ~/.hpc-monitor-grafana-scron.out
+sed 's/^0 6 1,15 \* \*/*\/5 * * * */' sites/<machine>/scrontab > /tmp/scrontab.$USER
+scrontab /tmp/scrontab.$USER
+```
+
+When a new line appears in the logs, install the real schedule, and remove the temporary file. If you merged other entries, repeat the merge in place of the `scrontab` line below:
+
+```bash
+tail -2 ~/.hpc-monitor-grafana-scron.out
+tail -2 ~/.hpc-monitor-grafana/<machine>/monitor.log
+scrontab sites/<machine>/scrontab
+rm /tmp/scrontab.$USER
+scrontab -l
 ```
 
 SLURM can show the tick job as `REQUEUED`. That's normal for `scrontab`, which reuses the job ID.
@@ -268,8 +280,8 @@ Open the public dashboard in a private browser window, so you aren't logged in:
 - [ ] The machine's card shows a pass rate, or a yellow status while the job is queued or running.
 - [ ] The machine has its own section, and its run's arrow lists the tests.
 - [ ] The run's `open` link shows its folder on GitHub, once the run has finished.
-- [ ] "Last report" is recent. An idle machine updates it once a day.
-- [ ] `scrontab -l` shows the tick, and `monitor.log` shows new lines every 15 minutes.
+- [ ] "Last report" is recent. It updates at every tick.
+- [ ] `scrontab -l` shows the real schedule, and `monitor.log` shows the test tick from step 8.
 
 ## Troubleshooting
 
@@ -281,8 +293,9 @@ Open the public dashboard in a private browser window, so you aren't logged in:
 | Red: `<file>.launcher` | A test file crashed its launcher or ran out of time | Read `~/.hpc-monitor-grafana/<machine>/runs/<run>/groups/<file>.log` |
 | Dragon can't start or finds no network | The launcher needs network options | Try `-t tcp` and `--network-prefix` from step 4 |
 | `publishing failed, will retry next tick` | Deploy key or GitHub access problem | Repeat the test in step 3 |
-| "Last report" is days old | The schedule, SSH, or push stopped | Check `scrontab -l` and `monitor.log`, and run `tick` by hand |
-| No run after a new release | The month's check had already happened | Wait for next month, or use `run --version` |
+| "Last report" is over 17 days old | The schedule, SSH, or push stopped | Check `scrontab -l` and `monitor.log`, and run `tick` by hand |
+| No run after a new release | The next scheduled tick hasn't happened | Wait, or use `run --version` |
+| Stuck on `PENDING` for days | Long queue, no allocation, or the job died | See [how-it-works.md](how-it-works.md#if-a-run-is-stuck-on-pending) |
 | The panel shows no data | The CSV doesn't exist yet, or GitHub's cache hasn't refreshed | Check the `results` branch, and wait about 5 minutes |
 
 ## Removing a machine

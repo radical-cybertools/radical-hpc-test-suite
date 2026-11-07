@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test each new release once a month on SLURM and publish the results to a git repo.
+"""Test each new release on SLURM and publish the results to a git repo.
 
 Short-lived and safe to repeat: each invocation advances open runs, publishes, and exits,
 so no process stays behind on the machine. Grafana reads the published CSV files.
@@ -36,7 +36,6 @@ log = logging.getLogger("hpc_monitor")
 DEFAULT_TIMING = {
     "missing_grace_seconds": 3600,  # accounting can lag behind a fresh submission
     "heartbeat_seconds": 86400,  # how often an otherwise idle machine reports it is alive
-    "release_check_day": 1,  # day of the month the release check becomes due
     "install_timeout_seconds": 1500,
 }
 DEFAULT_SOURCE_REPO = "https://github.com/radical-cybertools/rhapsody.git"
@@ -328,6 +327,7 @@ def load_config(path):
     if "repo" not in config["publish"]:
         raise SystemExit(f"{path}: [publish] needs a repo")
     config["site_dir"] = path.parent
+    config["site_file"] = path
     config["timing"] = DEFAULT_TIMING | config.get("timing", {})
     state_root = (os.environ.get("HPC_MONITOR_HOME") or config.get("state_dir")
                   or "~/.hpc-monitor-grafana")
@@ -360,7 +360,7 @@ class Monitor:
         self.site = config["machine"]
         self.timing = config["timing"]
         self.state_file = config["state_dir"] / "state.json"
-        self.state = {"runs": [], "tested": {}, "checked_month": None, "last_published": 0}
+        self.state = {"runs": [], "tested": {}, "last_published": 0}
         if self.state_file.exists():
             self.state |= json.loads(self.state_file.read_text())
 
@@ -398,12 +398,14 @@ class Monitor:
 
     # ----- entry points
 
-    def tick(self):
+    def tick(self, results_only=False):
+        """Follow open runs and publish. Unless results_only, also check for a new release."""
         failures = 0
         log.info("tick: %d open run(s)", len(self.open_runs()))
         for run in self.open_runs():
             failures += self.advance(run)
-        self.check_releases()
+        if not results_only:
+            self.check_releases()
         failures += self.publish()
         return 1 if failures else 0
 
@@ -418,24 +420,20 @@ class Monitor:
         failures = self.advance(run)
         return 1 if failures + self.publish() else 0
 
-    # ----- the monthly release check
+    # ----- the release check
 
     def latest_version(self, spec):
         with urllib.request.urlopen(spec["pypi_url"], timeout=60) as response:
             return json.load(response)["info"]["version"]
 
     def check_releases(self):
-        """Once a calendar month, start a run for each release not yet tested."""
-        today = time.gmtime(now())
-        month = time.strftime("%Y-%m", today)
-        if self.state["checked_month"] == month or today.tm_mday < self.timing["release_check_day"]:
-            return
+        """Start a run for the newest release if it hasn't been tested."""
         latest = {}
         for spec in self.config["run"]:
             try:
                 latest[spec["name"]] = self.latest_version(spec)
             except (OSError, ValueError, KeyError) as err:
-                # The month stays unchecked, so the next tick tries again.
+                # Nothing changes, so the next tick tries again.
                 log.warning("could not read latest %s version: %s", spec["package"], err)
                 return
         for spec in self.config["run"]:
@@ -452,9 +450,7 @@ class Monitor:
                 if run:
                     self.advance(run)
             else:
-                log.info("no new release of %s this month (latest %s)", spec["package"], version)
-        if not self.dry_run:
-            self.state["checked_month"] = month
+                log.info("no new release of %s (latest %s)", spec["package"], version)
         self.save()
 
     # ----- starting a run
@@ -544,6 +540,8 @@ class Monitor:
             "HPC_MONITOR_SOURCE_DIR": str(run_dir / "source"),
             "HPC_MONITOR_VERSION": run["version"],
             "HPC_MONITOR_REPO_DIR": str(pathlib.Path(__file__).resolve().parent),
+            "HPC_MONITOR_SITE_FILE": str(self.config["site_file"]),
+            "HPC_MONITOR_PYTHON": sys.executable,
         }
         output = self.shell(
             ["sbatch", "--parsable", f"--job-name={run['job_name']}",
@@ -949,6 +947,8 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     commands = parser.add_subparsers(dest="command", required=True)
     tick = commands.add_parser("tick", help="advance open runs and publish; scheduled command")
+    tick.add_argument("--results-only", action="store_true",
+                      help="follow open runs and publish, but don't check for a new release")
     run = commands.add_parser("run", help="start a run of a chosen version now")
     run.add_argument("--version", required=True)
     run.add_argument("--run", help="[[run]] name, if the site has several")
@@ -981,7 +981,7 @@ def main(argv=None):
 def run_command(args, config):
     monitor = Monitor(config, args.dry_run)
     if args.command == "tick":
-        return monitor.tick()
+        return monitor.tick(results_only=args.results_only)
     return monitor.manual_run(args.run, args.version)
 
 

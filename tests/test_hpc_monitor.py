@@ -335,41 +335,40 @@ class Environment(Base):
         return int(result.stdout or 0)
 
 
-class MonthlyRule(Base):
+class ReleaseCheck(Base):
     def sbatches(self):
         path = self.fake / "sbatch.log"
         return len(path.read_text().splitlines()) if path.exists() else 0
+
+    def finish_latest_job(self):
+        self.set_job("COMPLETED")
+        self.write_junit(ALL_PASS)
 
     def test_first_sight_records_without_running(self):
         self.tick()
         self.assertEqual(self.sbatches(), 0)
         self.assertEqual(self.state()["tested"], {"one": ["0.6.0"]})
 
-    def test_new_release_runs_once_in_the_month(self):
+    def test_new_release_runs_once(self):
         self.tick()
         self.clock[0] = epoch(2027, 2, 1)
         self.set_latest("0.7.0")
         self.tick()
         self.assertEqual(self.sbatches(), 1)
         self.assertEqual(self.record()["version"], "0.7.0")
-        self.set_job("COMPLETED")
-        self.write_junit(ALL_PASS)
-        self.clock[0] += 3600
+        self.finish_latest_job()
+        self.clock[0] = epoch(2027, 2, 15)
         self.tick()
         self.assertEqual(self.sbatches(), 1)
 
-    def test_second_release_in_a_month_waits_for_next_month(self):
+    def test_two_releases_in_a_month_are_both_tested(self):
         self.tick()
         self.clock[0] = epoch(2027, 2, 1)
         self.set_latest("0.7.0")
         self.tick()
-        self.set_job("COMPLETED")
-        self.write_junit(ALL_PASS)
-        self.clock[0] = epoch(2027, 2, 10)
+        self.finish_latest_job()
+        self.clock[0] = epoch(2027, 2, 15)
         self.set_latest("0.8.0")
-        self.tick()
-        self.assertEqual(self.sbatches(), 1)
-        self.clock[0] = epoch(2027, 3, 1)
         self.tick()
         self.assertEqual(self.sbatches(), 2)
         self.assertEqual(self.record()["version"], "0.8.0")
@@ -386,34 +385,126 @@ class MonthlyRule(Base):
         self.clock[0] = epoch(2027, 2, 1)
         self.tick()
         self.assertEqual(self.sbatches(), 0)
-        self.assertEqual(self.state()["checked_month"], "2027-02")
 
     def test_pypi_failure_retries_next_tick(self):
         self.tick()
         self.clock[0] = epoch(2027, 2, 1)
         self.pypi.unlink()
         self.tick()
-        self.assertEqual(self.state()["checked_month"], "2027-01")
+        self.assertEqual(self.sbatches(), 0)
         self.set_latest("0.7.0")
         self.tick()
         self.assertEqual(self.sbatches(), 1)
 
-    def test_check_waits_for_the_configured_day(self):
-        self.site = self.make_site("machine-a", "[timing]\nrelease_check_day = 5\n")
-        self.clock[0] = epoch(2027, 1, 4)
-        self.tick()
-        self.assertIsNone(self.state()["checked_month"])
-        self.clock[0] = epoch(2027, 1, 5)
-        self.tick()
-        self.assertEqual(self.state()["checked_month"], "2027-01")
-
     def test_baseline_counts_as_tested(self):
         self.run_version("0.6.0")
-        self.set_job("COMPLETED")
-        self.write_junit(ALL_PASS)
+        self.finish_latest_job()
         self.clock[0] = epoch(2027, 2, 1)
         self.tick()
         self.assertEqual(self.sbatches(), 1)
+
+    def test_state_with_the_old_monthly_key_still_loads(self):
+        self.tick()
+        state_file = self.tmp / "state" / "machine-a" / "state.json"
+        state = json.loads(state_file.read_text())
+        state["checked_month"] = "2027-01"
+        state_file.write_text(json.dumps(state))
+        self.set_latest("0.7.0")
+        self.tick()
+        self.assertEqual(self.sbatches(), 1)
+
+    def results_only_tick(self):
+        with contextlib.redirect_stdout(io.StringIO()):
+            return hpc_monitor.main(["tick", "--results-only", "--site", str(self.site)])
+
+    def test_results_only_tick_never_starts_a_job(self):
+        self.tick()
+        self.set_latest("0.7.0")
+        self.assertEqual(self.results_only_tick(), 0)
+        self.assertEqual(self.sbatches(), 0)
+        self.assertEqual(self.state()["runs"], [])
+
+    def test_results_only_tick_publishes_a_finished_job(self):
+        self.tick()
+        self.set_latest("0.7.0")
+        self.tick()
+        self.finish_latest_job()
+        self.set_latest("0.8.0")
+        self.assertEqual(self.results_only_tick(), 0)
+        rows, _ = self.published()
+        self.assertEqual((rows[-1]["version"], rows[-1]["status"]), ("0.7.0", "PASSED"))
+        self.assertEqual(self.sbatches(), 1)
+
+    def test_job_is_told_how_to_publish(self):
+        self.tick()
+        self.set_latest("0.7.0")
+        self.tick()
+        environment = (self.fake / "sbatch.env").read_text()
+        self.assertIn(f"HPC_MONITOR_SITE_FILE={self.site.resolve()}", environment)
+        self.assertIn("HPC_MONITOR_PYTHON=", environment)
+
+
+class PublishAfterJob(unittest.TestCase):
+    """The script a job calls as it ends, with a fake ssh."""
+
+    def setUp(self):
+        self.tmp = pathlib.Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.tmp, ignore_errors=True)
+        self.bin = self.tmp / "bin"
+        self.bin.mkdir()
+        self.calls = self.tmp / "ssh.log"
+        self.fake_ssh(0)
+        self.run_dir = self.tmp / "it's a run"
+        self.run_dir.mkdir()
+
+    def fake_ssh(self, code):
+        ssh = self.bin / "ssh"
+        ssh.write_text(f'#!/bin/bash\nprintf "%s\\n" "$*" >> "{self.calls}"\nexit {code}\n')
+        ssh.chmod(0o755)
+
+    def run_script(self, **extra):
+        env = os.environ | {
+            "PATH": f"{self.bin}:{os.environ['PATH']}", "HPC_MONITOR_LOGIN_HOST": "login1",
+            "HPC_MONITOR_RUN_DIR": str(self.run_dir), "HPC_MONITOR_PYTHON": "/usr/bin/python3",
+            "HPC_MONITOR_REPO_DIR": "/repo", "HPC_MONITOR_SITE_FILE": "/repo/it's/site.toml",
+        } | extra
+        env.pop("HPC_MONITOR_HOME", None)
+        return subprocess.run(["bash", str(REPO / "jobs" / "publish_after_job.sh")], env=env,
+                              capture_output=True, text=True, timeout=30, check=False)
+
+    def test_asks_the_login_node_for_a_delayed_results_only_tick(self):
+        result = self.run_script(HPC_MONITOR_PUBLISH_DELAY="7")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        call = self.calls.read_text()
+        self.assertIn("login1", call)
+        self.assertIn("sleep 7", call)
+        self.assertIn("tick --results-only", call)
+        self.assertIn("nohup setsid", call)
+
+    def test_quoted_command_survives_the_remote_shell(self):
+        self.run_script(HPC_MONITOR_PUBLISH_DELAY="0", HPC_MONITOR_PYTHON="/bin/echo")
+        call = self.calls.read_text().strip()
+        remote = call[call.index("sh -c "):call.index(" >/dev/null")]
+        output = subprocess.run(["bash", "-c", remote], capture_output=True, text=True,
+                                check=True).stdout
+        self.assertEqual(output.strip(),
+                         "/repo/hpc_monitor.py tick --results-only --site /repo/it's/site.toml")
+
+    def test_runs_only_once(self):
+        self.run_script()
+        self.run_script()
+        self.assertEqual(len(self.calls.read_text().splitlines()), 1)
+
+    def test_failed_connection_does_not_fail_the_job(self):
+        self.fake_ssh(255)
+        result = self.run_script()
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("next scheduled tick", result.stdout)
+
+    def test_no_login_host_does_not_fail_the_job(self):
+        result = self.run_script(HPC_MONITOR_LOGIN_HOST="")
+        self.assertEqual(result.returncode, 0)
+        self.assertFalse(self.calls.exists())
 
 
 class Resume(Base):

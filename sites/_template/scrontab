@@ -1,5 +1,6 @@
 # Monitor schedule for <machine>. "scrontab <file>" replaces the whole table.
 # Paths use $HOME, so this file holds no username and is safe to commit.
+# Runs at 06:00 on the 1st and 15th of each month.
 #SCRON --account=<account>
 #SCRON --partition=<partition>
 #SCRON --qos=<short qos>
@@ -8,6 +9,6 @@
 #SCRON --time=00:30:00
 #SCRON --job-name=hpc-grafana-tick
 # Direct mode, if the job can reach the internet:
-*/15 * * * * python3 "$HOME/<clone>/hpc_monitor.py" tick --site "$HOME/<clone>/sites/<machine>/site.toml" >> "$HOME/.hpc-monitor-grafana-scron.out" 2>&1
+0 6 1,15 * * python3 "$HOME/<clone>/hpc_monitor.py" tick --site "$HOME/<clone>/sites/<machine>/site.toml" >> "$HOME/.hpc-monitor-grafana-scron.out" 2>&1
 # SSH mode, if only the login node can. Use this line instead of the one above:
-# */15 * * * * ssh -o BatchMode=yes <login-host> 'python3 "$HOME/<clone>/hpc_monitor.py" tick --site "$HOME/<clone>/sites/<machine>/site.toml"' >> "$HOME/.hpc-monitor-grafana-scron.out" 2>&1
+# 0 6 1,15 * * ssh -o BatchMode=yes <login-host> 'python3 "$HOME/<clone>/hpc_monitor.py" tick --site "$HOME/<clone>/sites/<machine>/site.toml"' >> "$HOME/.hpc-monitor-grafana-scron.out" 2>&1

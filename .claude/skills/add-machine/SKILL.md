@@ -22,7 +22,7 @@ Ask for anything the person hasn't given you. You can suggest values from `sinfo
 - Modules to load, including MPI
 - Launcher options and `--exclusive`, if a connected machine has similar hardware to copy from
 - Which schedule option the site allows, and the partition and short QOS for the tick
-- The login host, for the SSH schedule
+- The login host, for the SSH schedule and for publishing when a job ends
 
 ## Steps and gates
 
@@ -36,10 +36,10 @@ Stop at each **STOP** and wait for a clear answer. Approval for one **STOP** doe
 | 4. Site files | Write the files and show the differences from the template | |
 | 5. Checks | Run `sbatch --test-only` and the dry run | |
 | 6. First run | Show the site files, account, nodes, time limit, queue estimate, and version. Say that it publishes public results | **STOP:** approves the files and the job, because it spends allocation and publishes |
-| 6. Follow the job | Run ticks until that job ends, and report the result. The approval above covers these ticks and what they publish. If the queue is long, tell the person. You can continue with steps 7 and 8, or stop and resume later, because the job doesn't depend on this session | |
+| 6. Follow the job | The job should publish about 2 minutes after it ends. If it doesn't, run `tick --results-only`, which never starts a job. Report the result. The approval above covers this. If the queue is long, tell the person. You can continue with steps 7 and 8, or stop and resume later, because the job doesn't depend on this session | |
 | 7. Commit | Print the commit steps | **STOP:** commits, or asks you to |
 | 8. Test SSH | For the SSH schedule, show the short `srun` test | **STOP:** approves the test, because it's a real job |
-| 8. Schedule | Show `scrontab -l` and the final merged file | **STOP:** approves installing and committing it |
+| 8. Schedule | Show `scrontab -l`, the final merged file, and the temporary 5-minute test | **STOP:** approves installing and committing it. After one test tick works, install the real schedule |
 | 9. Dashboard | Build on the test dashboard with `--uid hpc-monitor-design`, check it logged out, and show a screenshot | **STOP:** approves the public update |
 | 10. Final check | Go through the checklist, and report each item as checked or not | |
 

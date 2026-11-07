@@ -1,14 +1,14 @@
 # RADICAL HPC test suite monitor (Grafana)
 
-Tests each new RHAPSODY release once a month on our HPC machines, and publishes the results to the `results` branch of this repo, which a public Grafana dashboard reads.
+Tests each new RHAPSODY release on our HPC machines, and publishes the results to the `results` branch of this repo, which a public Grafana dashboard reads.
 
-For the design constraints and why it's built this way, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+For a plain-language walkthrough, terminology, and diagrams, see [docs/how-it-works.md](docs/how-it-works.md). For the design constraints and why it's built this way, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## How it works
 
 ```
-Login node: tick, about every 15 min, then exits
-  1. Once a month: ask PyPI for the latest release
+Login node: tick on the 1st and 15th of each month, then exits
+  1. Ask PyPI for the latest release
   2. New release: build a fresh venv, clone tests from the tag, sbatch
   3. Follow the job with sacct
   4. Rebuild the files in data/ and push them if anything changed
@@ -17,7 +17,7 @@ Login node: tick, about every 15 min, then exits
 "results" branch  <-- Grafana (Infinity plugin) <-- viewers, no login
 ```
 
-The compute job never talks to the outside world. Jobs killed by SLURM can't report themselves, so the tick reports them from `sacct`.
+The compute job never contacts outside services. As it ends, it asks the login node to run one more tick about 2 minutes later, which publishes its results. Jobs that crash before that can't report themselves, so the next scheduled tick reports them from `sacct`.
 
 | Job | Dashboard |
 |---|---|
@@ -26,7 +26,7 @@ The compute job never talks to the outside world. Jobs killed by SLURM can't rep
 | Passed | Green `PASSED` |
 | Failed, killed by SLURM, or couldn't start | Red `FAILED`, with the reason |
 
-A status change appears within about 25 minutes: up to 15 for the next tick, about 5 for GitHub's raw file cache, and up to 5 for the dashboard's refresh. So a job that has started can still show `PENDING` for a while, and a job shorter than a tick may never show `RUNNING`.
+Results normally appear within about 10 minutes of a job ending: about 2 for the tick, about 5 for GitHub's raw file cache, and up to 5 for the dashboard's refresh. While a job waits or runs, it shows `PENDING`, and `RUNNING` is rare. If `PENDING` has lasted several days, see [docs/how-it-works.md](docs/how-it-works.md#if-a-run-is-stuck-on-pending).
 
 ## Finding out why a run failed
 
@@ -38,14 +38,14 @@ A status change appears within about 25 minutes: up to 15 for the next tick, abo
 
 **Resource use** comes from `sacct` once a job ends: CPU use as a share of the allocation, and peak memory as the largest single task. GPU use isn't shown, because SLURM reported 0 for it on the steps checked. Per-file numbers match SLURM steps to each file's log times, so treat them as close, not exact.
 
-**If a machine stops reporting,** its rows keep their last status. Check "Last report" in its section: an idle machine updates that once a day.
+**If a machine stops reporting,** its rows keep their last status. Check "Last report" in its section: it updates at every tick, so over about 17 days old means something is wrong.
 
 ## Which releases get tested
 
-On the first tick of each calendar month, the monitor reads the latest version from PyPI and tests it if it hasn't been tested before.
+Each scheduled tick reads the latest version from PyPI, and tests it if it hasn't been tested before.
 
-- At most one release per month is tested, and always the newest. Releases in between are skipped.
-- A release published after the check waits for next month's check. Change this with `release_check_day` under `[timing]`.
+- If several releases appear between ticks, only the newest is tested.
+- A release waits for the next scheduled tick, on the 1st or 15th.
 - The first time a machine sees a release, it only records it, because a run spends allocation. Use `run` for a baseline.
 - If PyPI can't be reached, the next tick tries again.
 
@@ -56,6 +56,9 @@ Each run installs `rhapsody-py[dragon]==<version>` from PyPI in its own venv, wi
 ```bash
 # Scheduled command. By hand, it can start a due run and publish results
 python3 hpc_monitor.py tick --site sites/stellar-ai/site.toml
+
+# Update the dashboard from open runs. Never checks for releases or starts a job
+python3 hpc_monitor.py tick --results-only --site sites/stellar-ai/site.toml
 
 # Test a chosen version now: a baseline or a rerun. A rerun gets a new row.
 python3 hpc_monitor.py run --site sites/stellar-ai/site.toml --version 0.6.0
@@ -97,9 +100,10 @@ Each machine owns its sbatch script. The monitor depends only on this:
 
 | Direction | Contract |
 |---|---|
-| Monitor sets | `HPC_MONITOR_RUN_DIR`, `HPC_MONITOR_VENV`, `HPC_MONITOR_SOURCE_DIR`, `HPC_MONITOR_VERSION`, `HPC_MONITOR_REPO_DIR` |
+| Monitor sets | `HPC_MONITOR_RUN_DIR`, `HPC_MONITOR_VENV`, `HPC_MONITOR_SOURCE_DIR`, `HPC_MONITOR_VERSION`, `HPC_MONITOR_REPO_DIR`, `HPC_MONITOR_SITE_FILE`, `HPC_MONITOR_PYTHON` |
 | Monitor overrides | `--job-name` and `--output`, on the `sbatch` command line |
 | Script must | Write `$HPC_MONITOR_RUN_DIR/junit.xml` |
+| Script should | Set `HPC_MONITOR_LOGIN_HOST`, and run `jobs/publish_after_job.sh` from a `trap` when it ends |
 
 `jobs/run_groups.py` runs each file in `tests/integration/test-hpc/dragon` under its own launcher and time budget, so a hang costs that file and not the whole run. `jobs/pytest_live.py` records each result as it happens, so a stopped file keeps the tests and errors it already had. `--total` must stay below the job's time limit.
 
@@ -113,8 +117,8 @@ Follow [docs/adding-a-machine.md](docs/adding-a-machine.md).
 
 | Symptom | Likely cause | What to do |
 |---|---|---|
-| "Last report" is days old | Schedule, SSH, or push stopped working | Check `monitor.log` and `scrontab -l`, and run `tick` by hand |
+| "Last report" is over 17 days old | Schedule, SSH, or push stopped working | Check `monitor.log` and `scrontab -l`, and run `tick` by hand |
 | Red: `Could not start the job` | `pip`, the tag checkout, or `sbatch` failed | Fix it, then rerun with `run --version` |
 | Red: `job completed but no results` | The job script didn't write `junit.xml` | Check `slurm.out` in the run directory |
 | Red: `<file>.launcher` | A test file crashed its launcher or ran over budget | See `groups/<file>.log` in the run directory |
-| New release isn't running | The month's check already happened | Wait for next month, or use `run --version` |
+| New release isn't running | The next scheduled tick hasn't happened | Wait, or use `run --version` |

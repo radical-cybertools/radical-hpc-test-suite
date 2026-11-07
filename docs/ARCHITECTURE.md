@@ -20,12 +20,13 @@ This is the source of truth for why the monitor is built this way. Read it befor
 ```text
 HPC machine                                 GitHub                      Grafana Cloud
 ---------------------------------           ------------------          -------------
-Schedule, about every 15 minutes
+Schedule: 1st and 15th of each month
   -> tick on a login node, then exits
-       1. Monthly: read PyPI
+       1. Read PyPI
        2. New release: fresh venv,
           tests from the tag, sbatch ---> SLURM job on compute nodes
-       3. Read the job's state: sacct       (writes only local files)
+       3. Read the job's state: sacct       (ends by asking the login node
+          (also 2 min after a job ends)      for a results-only tick)
        4. Rebuild data/<machine>* files
        5. Push over SSH ------------------> "results" branch <--- Infinity plugin <--- viewers
                                             (CSV, logs)           reads public CSVs     no login
@@ -33,9 +34,10 @@ Schedule, about every 15 minutes
 
 | Part | File | Owns |
 |---|---|---|
-| Monitor | `hpc_monitor.py` | Monthly check, run lifecycle, reading SLURM, publishing |
+| Monitor | `hpc_monitor.py` | Release check, run lifecycle, reading SLURM, publishing |
 | Runner in the job | `jobs/run_groups.py` | One launcher and time budget per test file; one JUnit file |
 | Live results | `jobs/pytest_live.py` | Keeps results and errors when a test file is stopped |
+| End-of-job request | `jobs/publish_after_job.sh` | Asks the login node for one results-only tick as the job ends |
 | Machine settings | `sites/<machine>/` | Job script, schedule, and site settings |
 | Dashboard | `dashboard/build_dashboard.py` | Generates every panel; `dashboard/hpc-monitor.json` is its output |
 | Results | `results` branch | Published data; a separate history from the code |
@@ -44,9 +46,9 @@ Schedule, about every 15 minutes
 
 Changes must keep all of these:
 
-1. **The tick is short and exits.** There's no daemon or background process, and a lock stops ticks from overlapping.
-2. **The compute job never talks to the outside world.** It writes files, and the tick publishes them.
-3. **`sacct` decides what happened to the job.** A job that was killed must never depend on reporting itself.
+1. **The tick is short and exits.** There's no daemon, and a lock stops ticks from overlapping. The only background process is the end-of-job request, which waits about 2 minutes, runs one tick, and exits.
+2. **The compute job never contacts outside services.** It writes files, and a tick publishes them. Its only connection is `ssh` to its own login node, to ask for that tick.
+3. **`sacct` decides what happened to the job.** The end-of-job step only asks for a tick, which then reads `sacct`. It never reports a result itself, and a killed job is still reported by the next scheduled tick.
 4. **Publishing is rebuilt from state and safe to retry.** A failed push retries on the next tick and never changes a run's result. Published rows are merged, so lost state can't erase history.
 5. **Each machine writes only its own files,** so machines pushing at the same time don't conflict.
 6. **Results stay on the `results` branch,** and never on a code branch.
@@ -75,8 +77,9 @@ The `<machine>` name comes from `machine` in `site.toml`. The job script's contr
 |---|---|
 | **Grafana, not CDash** | CDash has no running or pending state, its free service reports a cap of about 500 builds with old ones deleted, and its retention defaults to 90 days. Here, history is CSV in git that we own. CDash work remains on `feature/cdash-approach`. |
 | **CSV read by Grafana's Infinity plugin** | It needs no database, and avoids Grafana's 14-day retention because the data stays in git. |
-| **A separate `results` branch** | Daily machine commits stay out of the code history, pushes don't collide with code work, and dashboard URLs survive merges. |
-| **Monthly check, newest release only** | Each run spends allocation, and this is the agreed testing rhythm. |
+| **A separate `results` branch** | Machine commits stay out of the code history, pushes don't collide with code work, and dashboard URLs survive merges. |
+| **Ticks on the 1st and 15th, testing the newest new release** | Releases are rare, and each tick is a job. Ticking every 15 minutes cost about 2,880 jobs a month without catching releases any sooner in practice. |
+| **Publish through a delayed tick on the login node** | SLURM reports a job as running until it has ended, so a tick inside the job would see an unfinished job and empty usage numbers. A separate follow-up job would catch crashes too, but needs more code and settings. |
 | **First sight only records a release** | A newly connected machine shouldn't spend allocation by itself. The baseline is a deliberate manual run. |
 | **One launcher per test file** | pytest writes results only at the end, and Dragon's exit code can't be trusted, so a hang must cost one file, not the run. |
 | **Classic rows with one section per machine** | They're known to work on public links, and classic rows can't nest. The newer dashboard layout is untested on public links. |
@@ -86,6 +89,9 @@ The `<machine>` name comes from `machine` in `site.toml`. The job script's contr
 ## Known limits
 
 - It tests after a release is published, so it isn't a release gate yet.
+- A job that crashes before its last step, such as from a node failure, shows `PENDING` until the next scheduled tick, or until someone runs `tick`. The owner accepts this, and investigates an old `PENDING` by hand. See [how-it-works.md](how-it-works.md#if-a-run-is-stuck-on-pending).
+- `RUNNING` rarely appears, because normally no tick happens while a job runs.
+- Only the `ssh` route for end-of-job publishing is built. A machine without it publishes at its next scheduled tick.
 - There are no alerts, so someone has to look at the dashboard.
 - A machine that stops reporting isn't flagged red. Its "Last report" just gets old.
 - GPU use isn't shown, because SLURM reported 0 on the steps checked. RHAPSODY telemetry could fill this in, but it's untested on these machines.

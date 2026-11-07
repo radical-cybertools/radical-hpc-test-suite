@@ -66,6 +66,14 @@ class Sites(unittest.TestCase):
                 self.assertEqual(config["publish"]["branch"], "results")
                 self.assertEqual(config["machine"], path.parent.name)
 
+    def test_job_scripts_publish_when_they_end(self):
+        for path in [*(REPO / "sites").glob("*/*.sbatch")]:
+            with self.subTest(script=str(path.relative_to(REPO))):
+                text = path.read_text()
+                self.assertIn("jobs/publish_after_job.sh", text)
+                self.assertIn(" EXIT", text)
+                self.assertIn("HPC_MONITOR_LOGIN_HOST=", text)
+
     def test_job_scripts_exist(self):
         for path in self.sites():
             for run in tomllib.loads(path.read_text())["run"]:
