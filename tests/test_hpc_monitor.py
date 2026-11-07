@@ -206,6 +206,31 @@ class Scrubbing(unittest.TestCase):
                                  user="me", home="/home/me")
         self.assertEqual(text, "~/x <user> API_TOKEN=<redacted> Bearer <redacted> red")
 
+    def test_symlinked_home_and_its_real_path_are_removed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp).resolve()
+            real = root / "storage" / "person"
+            real.mkdir(parents=True)
+            (root / "homes").mkdir()
+            home = root / "homes" / "person"
+            home.symlink_to(real)
+            text = hpc_monitor.scrub(f"{home}/a.py {real}/b.py", user="", home=str(home))
+        self.assertEqual(text, "~/a.py ~/b.py")
+
+    def test_home_whose_real_path_starts_with_it_is_removed_whole(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp).resolve()
+            real = root / "person.real"
+            real.mkdir()
+            home = root / "person"
+            home.symlink_to(real)
+            text = hpc_monitor.scrub(f"{real}/a.py", user="", home=str(home))
+        self.assertEqual(text, "~/a.py")
+
+    def test_scratch_path_hides_the_letter_and_the_user(self):
+        text = hpc_monitor.scrub("/pscratch/sd/p/person/run/x.log", user="person", home="/nowhere")
+        self.assertEqual(text, "/pscratch/sd/<user>/run/x.log")
+
     def test_non_ascii_text_survives(self):
         self.assertEqual(hpc_monitor.scrub("naïve\x00", user="", home=""), "naïve")
 

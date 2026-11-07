@@ -97,9 +97,14 @@ def scrub(text, user=None, home=None):
         r"\1\2<redacted>", text,
     )
     text = re.sub(r"(?i)\b(bearer\s+)\S+", r"\1<redacted>", text)
-    if home and home != "/":
-        text = text.replace(home, "~")
+    # Home can be a symlink, and logs can hold either spelling of it. The longer goes first,
+    # so a spelling that starts with the other one is replaced whole.
+    paths = {home, os.path.realpath(home)} if home else set()
+    for path in sorted(paths - {"", "/"}, key=len, reverse=True):
+        text = text.replace(path, "~")
     if user:
+        # Paths outside home, such as /pscratch/sd/<letter>/<user>, also name the first letter.
+        text = re.sub(rf"/{re.escape(user[0])}/{re.escape(user)}\b", "/<user>", text)
         text = re.sub(rf"\b{re.escape(user)}\b", "<user>", text)
     return text
 
