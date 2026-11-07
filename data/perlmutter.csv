@@ -1,1 +1,2 @@
 run_id,machine,software,version,slurm_job_id,status,slurm_state,failure_summary,passed,failed,skipped,duration_min,nodes,dragon_version,submitted_at,ended_at,details_url,last_reported,cpu_percent,peak_memory_gb,cpu_hours
+rhapsody-dragon-0.6.0-20261107T212313,perlmutter,rhapsody,0.6.0,60977034,PENDING,PENDING,,,,,,,0.14.1,2026-11-07T21:23:13Z,,https://github.com/radical-cybertools/radical-hpc-test-suite/tree/results/data/runs/perlmutter/rhapsody/0.6.0/60977034-20261107T212313,2026-11-07T21:26:04Z,,,
