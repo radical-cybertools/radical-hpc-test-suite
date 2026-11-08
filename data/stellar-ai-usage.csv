@@ -1,7 +1,7 @@
-run_id,machine,version,slurm_job_id,test_file,elapsed_s,cpu_percent,peak_memory_gb,submitted_at
-rhapsody-dragon-0.6.0-20261106T165335,stellar-ai,0.6.0,16081,test_mpi,310.0,48.6,7.09,2026-11-06T16:53:35Z
-rhapsody-dragon-0.6.0-20261106T165335,stellar-ai,0.6.0,16081,test_multinode_gpu,19.0,5.3,1.87,2026-11-06T16:53:35Z
-rhapsody-dragon-0.6.0-20261106T165335,stellar-ai,0.6.0,16081,test_pinning,21.0,8.3,2.14,2026-11-06T16:53:35Z
-rhapsody-dragon-0.6.0-20261106T165335,stellar-ai,0.6.0,16081,test_scale,123.0,23.6,4.85,2026-11-06T16:53:35Z
-rhapsody-dragon-0.6.0-20261106T165335,stellar-ai,0.6.0,16081,test_singlenode_gpu,21.0,7.3,2.05,2026-11-06T16:53:35Z
-rhapsody-dragon-0.6.0-20261106T165335,stellar-ai,0.6.0,16081,test_throughput,15.0,0.1,0.28,2026-11-06T16:53:35Z
+run_id,machine,version,suite,slurm_job_id,test_file,elapsed_s,cpu_percent,peak_memory_gb,submitted_at
+rhapsody-dragon-0.6.0-20261106T165335,stellar-ai,0.6.0,,16081,test_mpi,310.0,48.6,7.09,2026-11-06T16:53:35Z
+rhapsody-dragon-0.6.0-20261106T165335,stellar-ai,0.6.0,,16081,test_multinode_gpu,19.0,5.3,1.87,2026-11-06T16:53:35Z
+rhapsody-dragon-0.6.0-20261106T165335,stellar-ai,0.6.0,,16081,test_pinning,21.0,8.3,2.14,2026-11-06T16:53:35Z
+rhapsody-dragon-0.6.0-20261106T165335,stellar-ai,0.6.0,,16081,test_scale,123.0,23.6,4.85,2026-11-06T16:53:35Z
+rhapsody-dragon-0.6.0-20261106T165335,stellar-ai,0.6.0,,16081,test_singlenode_gpu,21.0,7.3,2.05,2026-11-06T16:53:35Z
+rhapsody-dragon-0.6.0-20261106T165335,stellar-ai,0.6.0,,16081,test_throughput,15.0,0.1,0.28,2026-11-06T16:53:35Z
