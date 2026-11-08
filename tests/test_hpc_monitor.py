@@ -469,6 +469,98 @@ class ReleaseCheck(Base):
         self.assertIn("HPC_MONITOR_PYTHON=", environment)
 
 
+class SplitRuns(Base):
+    """One machine with separate CPU and GPU runs."""
+
+    def sbatches(self):
+        path = self.fake / "sbatch.log"
+        return len(path.read_text().splitlines()) if path.exists() else 0
+
+    def split_site(self, gpu_enabled=True):
+        site = self.make_site("machine-s")
+        text = site.read_text().replace(
+            'name = "one"\n', 'name = "one"\nsuite = "CPU"\npytest_args = ["-m", "not gpu"]\n')
+        text += f"""
+[[run]]
+name = "two"
+suite = "GPU"
+enabled = {str(gpu_enabled).lower()}
+package = "rhapsody-py"
+job_script = "job.sbatch"
+pytest_args = ["-m", "gpu"]
+source_repo = "file://{self.source}"
+pypi_url = "file://{self.pypi}"
+"""
+        site.write_text(text)
+        self.site = site
+        return site
+
+    def run_named(self, name, version):
+        with contextlib.redirect_stdout(io.StringIO()):
+            return hpc_monitor.main(["run", "--site", str(self.site), "--run", name,
+                                     "--version", version])
+
+    def test_each_enabled_run_starts_its_own_job(self):
+        self.split_site()
+        self.tick()
+        self.set_latest("0.7.0")
+        self.tick()
+        self.assertEqual(self.sbatches(), 2)
+        self.assertEqual(sorted(r["name"] for r in self.state("machine-s")["runs"]),
+                         ["one", "two"])
+
+    def test_pytest_args_reach_the_job_with_quoting_intact(self):
+        self.split_site(gpu_enabled=False)
+        self.tick()
+        self.set_latest("0.7.0")
+        self.tick()
+        environment = (self.fake / "sbatch.env").read_text()
+        self.assertIn("HPC_MONITOR_PYTEST_ARGS=-m 'not gpu'", environment)
+
+    def test_switched_off_run_is_never_started_by_a_check(self):
+        self.split_site(gpu_enabled=False)
+        self.tick()
+        self.set_latest("0.7.0")
+        self.tick()
+        self.assertEqual(self.sbatches(), 1)
+        self.assertEqual(self.state("machine-s")["runs"][0]["name"], "one")
+
+    def test_switched_off_run_can_still_be_started_by_name(self):
+        self.split_site(gpu_enabled=False)
+        self.assertEqual(self.run_named("two", "0.6.0"), 0)
+        self.assertEqual(self.sbatches(), 1)
+        self.assertIn("HPC_MONITOR_PYTEST_ARGS=-m gpu", (self.fake / "sbatch.env").read_text())
+
+    def test_switched_on_run_records_the_release_without_running(self):
+        self.split_site(gpu_enabled=False)
+        self.tick()
+        self.split_site(gpu_enabled=True)
+        self.set_latest("0.7.0")
+        self.tick()
+        self.assertEqual(self.sbatches(), 1)
+        self.assertEqual(self.state("machine-s")["tested"]["two"], ["0.7.0"])
+        self.set_latest("0.8.0")
+        self.tick()
+        self.assertEqual(self.sbatches(), 3)
+
+    def test_suite_and_run_label_are_published(self):
+        self.split_site(gpu_enabled=False)
+        self.assertEqual(self.run_named("two", "0.6.0"), 0)
+        rows, clone = self.published("machine-s")
+        self.assertEqual((rows[-1]["suite"], rows[-1]["run_label"]), ("GPU", "0.6.0 GPU"))
+
+    def test_single_run_machines_have_an_empty_suite(self):
+        self.assertEqual(self.run_version(), 0)
+        rows, _ = self.published()
+        self.assertEqual((rows[-1]["suite"], rows[-1]["run_label"]), ("", "0.6.0"))
+
+    def test_duplicate_run_names_are_rejected(self):
+        site = self.make_site("machine-d")
+        site.write_text(site.read_text() + site.read_text()[site.read_text().index("[[run]]"):])
+        with self.assertRaises(SystemExit):
+            hpc_monitor.load_config(site)
+
+
 class PublishAfterJob(unittest.TestCase):
     """The script a job calls as it ends, with a fake ssh."""
 
@@ -820,6 +912,9 @@ echo "$name ran with $*"
 case "$name" in
     test_hang) exec sleep 60;;
     test_crash) exit 0;;
+    test_late)
+        (sleep 2; echo "<testsuites><testsuite><testcase classname='$name' name='ok'/></testsuite></testsuites>" > "$junit") &
+        exit 0;;
     test_partial)
         cat >> "$HPC_MONITOR_LIVE_RESULTS" <<'LIVE'
 {"test": "f.py::test_good", "outcome": null, "message": ""}
@@ -842,12 +937,12 @@ esac
         self.suite = self.tmp / "suite"
         self.suite.mkdir()
 
-    def run_groups(self, files, *args):
+    def run_groups(self, files, *args, environment=None):
         for name in files:
             (self.suite / name).write_text("")
         junit = self.tmp / "run" / "junit.xml"
         junit.parent.mkdir(exist_ok=True)
-        env = os.environ | {"PATH": f"{self.bin}:{os.environ['PATH']}"}
+        env = os.environ | {"PATH": f"{self.bin}:{os.environ['PATH']}"} | (environment or {})
         env.pop("SLURM_JOB_ID", None)
         env.pop("SLURM_NNODES", None)
         result = subprocess.run(
@@ -906,6 +1001,15 @@ esac
         records = [json.loads(line) for line in live.read_text().splitlines()]
         self.assertEqual([(r["outcome"], r["message"]) for r in records],
                          [(None, ""), ("failed", "boom")])
+
+    def test_pytest_args_from_the_monitor_reach_pytest(self):
+        self.run_groups(["test_a.py"], environment={"HPC_MONITOR_PYTEST_ARGS": "-m 'not gpu'"})
+        log = (self.tmp / "run" / "groups" / "test_a.log").read_text()
+        self.assertIn("-v -m not gpu -p pytest_live", log)
+
+    def test_results_written_just_after_the_launcher_returns_are_kept(self):
+        _, junit = self.run_groups(["test_late.py"])
+        self.assertEqual(self.names(junit), ["test_late.ok"])
 
     def test_crash_without_results_is_a_failure(self):
         _, junit = self.run_groups(["test_crash.py"])

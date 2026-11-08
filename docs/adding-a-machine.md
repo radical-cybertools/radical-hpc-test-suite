@@ -298,6 +298,36 @@ Open the public dashboard in a private browser window, so you aren't logged in:
 | Stuck on `PENDING` for days | Long queue, no allocation, or the job died | See [how-it-works.md](how-it-works.md#if-a-run-is-stuck-on-pending) |
 | The panel shows no data | The CSV doesn't exist yet, or GitHub's cache hasn't refreshed | Check the `results` branch, and wait about 5 minutes |
 
+## Separate CPU and GPU jobs
+
+Use this when GPU time is limited, so CPU testing continues without it. Most machines don't need it.
+
+Give the machine two `[[run]]` entries in `site.toml`, each with its own job script. The CPU job script asks for CPU nodes, and the GPU one for GPU nodes:
+
+```toml
+[[run]]
+name = "rhapsody-dragon"        # keep an existing run's name, so its tested releases carry over
+suite = "CPU"
+package = "rhapsody-py"
+job_script = "dragon_suite_cpu.sbatch"
+pytest_args = ["-m", "not gpu"]
+extra_packages = ["pytest", "pytest-asyncio", "mpi4py"]
+
+[[run]]
+name = "rhapsody-dragon-gpu"
+suite = "GPU"
+package = "rhapsody-py"
+job_script = "dragon_suite.sbatch"
+pytest_args = ["-m", "gpu"]
+extra_packages = ["pytest", "pytest-asyncio", "mpi4py"]
+```
+
+- **Which tests go where:** the GPU job runs tests marked `@pytest.mark.gpu`, and the CPU job runs everything else, so an unmarked test still runs somewhere. New GPU tests must carry the marker.
+- **Switching GPU off:** add `enabled = false` to its `[[run]]`. Release checks skip it, and the CPU job carries on.
+- **Switching it back on:** remove `enabled = false`. It records the current release without running, then tests the next new release. To test the current one now, run `python3 hpc_monitor.py run --site sites/<machine>/site.toml --run rhapsody-dragon-gpu --version <version>`.
+- **On the dashboard:** each run shows its suite. The machine's card shows the newest run, and the run label beside "Last report" says which.
+- **Releases before RHAPSODY commit `6f36883`,** including `v0.6.0`, fail during setup on nodes without GPUs, so their CPU runs are red until a later release.
+
 ## Removing a machine
 
 1. Remove its schedule line, or run `scrontab -r` if it was the only entry.

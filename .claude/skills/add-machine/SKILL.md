@@ -20,6 +20,7 @@ Ask for anything the person hasn't given you. You can suggest values from `sinfo
 - Display name for the dashboard, and whether it replaces a grey "Not connected" card
 - Account, GPU partition, QOS, and GPUs per node for the test job
 - Modules to load, including MPI
+- Whether to run CPU and GPU tests as separate jobs, which is worth it when GPU time is limited
 - Launcher options and `--exclusive`, if a connected machine has similar hardware to copy from
 - Which schedule option the site allows, and the partition and short QOS for the tick
 - The login host, for the SSH schedule and for publishing when a job ends

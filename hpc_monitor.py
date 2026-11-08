@@ -23,6 +23,7 @@ import os
 import pathlib
 import random
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -53,15 +54,15 @@ COLUMNS = (
     "run_id", "machine", "software", "version", "slurm_job_id", "status", "slurm_state",
     "failure_summary", "passed", "failed", "skipped", "duration_min", "nodes",
     "dragon_version", "submitted_at", "ended_at", "details_url", "last_reported",
-    "cpu_percent", "peak_memory_gb", "cpu_hours",
+    "cpu_percent", "peak_memory_gb", "cpu_hours", "suite", "run_label",
 )
 TEST_COLUMNS = (
-    "run_id", "machine", "version", "slurm_job_id", "run_status", "slurm_state", "passed",
+    "run_id", "machine", "version", "suite", "slurm_job_id", "run_status", "slurm_state", "passed",
     "failed", "skipped", "duration_min", "cpu_percent", "peak_memory_gb", "dragon_version", "test",
     "result", "outcome", "duration_s", "error", "details_url", "submitted_at",
 )
 USAGE_COLUMNS = (
-    "run_id", "machine", "version", "slurm_job_id", "test_file", "elapsed_s", "cpu_percent",
+    "run_id", "machine", "version", "suite", "slurm_job_id", "test_file", "elapsed_s", "cpu_percent",
     "peak_memory_gb", "submitted_at",
 )
 USAGE_FIELDS = ("JobID", "Elapsed", "TotalCPU", "CPUTime", "MaxRSS", "Start", "End")
@@ -341,10 +342,16 @@ def load_config(path):
     config.setdefault("setup", [])
     config["publish"].setdefault("branch", "main")
     config["publish"].setdefault("public_url", "")
+    names = [run.get("name") for run in config["run"]]
+    if len(names) != len(set(names)):
+        raise SystemExit(f"{path}: each [[run]] needs a different name")
     for run in config["run"]:
         for key in ("name", "package", "job_script"):
             if key not in run:
                 raise SystemExit(f"{path}: a [[run]] entry is missing {key!r}")
+        run.setdefault("suite", "")  # label on the dashboard, such as CPU or GPU
+        run.setdefault("enabled", True)  # whether release checks start this run
+        run.setdefault("pytest_args", [])
         run.setdefault("software", run["package"].removesuffix("-py"))
         run.setdefault("install", f"{run['package']}[dragon]=={{version}}")
         run.setdefault("extra_packages", ["pytest", "pytest-asyncio"])
@@ -398,6 +405,10 @@ class Monitor:
                 return spec
         raise RuntimeError(f"run {run['name']!r} is no longer in site.toml")
 
+    def suite(self, run):
+        """The run's dashboard label, or empty if its [[run]] has none or is gone."""
+        return next((s["suite"] for s in self.config["run"] if s["name"] == run["name"]), "")
+
     def open_runs(self):
         return [r for r in self.state["runs"] if r["stage"] != "closed"]
 
@@ -415,7 +426,9 @@ class Monitor:
         return 1 if failures else 0
 
     def manual_run(self, name, version):
-        specs = [s for s in self.config["run"] if name in (None, s["name"])]
+        # By name, a disabled run can still be started by hand.
+        specs = [s for s in self.config["run"]
+                 if s["name"] == name or (name is None and s["enabled"])]
         if not specs:
             log.error("no [[run]] named %s", name)
             return 1
@@ -433,18 +446,32 @@ class Monitor:
 
     def check_releases(self):
         """Start a run for the newest release if it hasn't been tested."""
-        latest = {}
+        paused = self.state.setdefault("paused", [])
         for spec in self.config["run"]:
+            if not spec["enabled"] and spec["name"] not in paused:
+                log.info("%s is switched off, so it won't be started", spec["name"])
+                paused.append(spec["name"])
+        enabled = [s for s in self.config["run"] if s["enabled"]]
+        latest = {}
+        for spec in enabled:
             try:
                 latest[spec["name"]] = self.latest_version(spec)
             except (OSError, ValueError, KeyError) as err:
                 # Nothing changes, so the next tick tries again.
                 log.warning("could not read latest %s version: %s", spec["package"], err)
                 return
-        for spec in self.config["run"]:
+        for spec in enabled:
             version = latest[spec["name"]]
             tested = self.state["tested"].get(spec["name"])
-            if tested is None:
+            if spec["name"] in paused:
+                # Switching a run back on mustn't spend allocation by surprise, so this release
+                # is only recorded, as for a new machine.
+                log.info("%s is switched on again; recording %s without running it",
+                         spec["name"], version)
+                paused.remove(spec["name"])
+                if version not in (tested or []):
+                    self.state["tested"].setdefault(spec["name"], []).append(version)
+            elif tested is None:
                 # First sight is recorded only: a baseline spends allocation, so it's manual.
                 log.info("recording %s %s; use the run command for a baseline",
                          spec["name"], version)
@@ -547,6 +574,7 @@ class Monitor:
             "HPC_MONITOR_REPO_DIR": str(pathlib.Path(__file__).resolve().parent),
             "HPC_MONITOR_SITE_FILE": str(self.config["site_file"]),
             "HPC_MONITOR_PYTHON": sys.executable,
+            "HPC_MONITOR_PYTEST_ARGS": shlex.join(spec["pytest_args"]),
         }
         output = self.shell(
             ["sbatch", "--parsable", f"--job-name={run['job_name']}",
@@ -707,6 +735,8 @@ class Monitor:
         usage = self.job_usage(run)
         for key in ("cpu_percent", "peak_memory_gb", "cpu_hours"):
             values[key] = usage.get(key)
+        values["suite"] = self.suite(run)
+        values["run_label"] = f"{run['version']} {values['suite']}".strip()
         return {k: "" if v is None else str(v) for k, v in values.items()}
 
     def job_usage(self, run):
@@ -740,8 +770,8 @@ class Monitor:
             return []
         row = self.row(run)
         common = {k: row[k] for k in (
-            "run_id", "machine", "version", "slurm_job_id", "slurm_state", "passed", "failed",
-            "skipped", "duration_min", "cpu_percent", "peak_memory_gb", "dragon_version",
+            "run_id", "machine", "version", "suite", "slurm_job_id", "slurm_state", "passed",
+            "failed", "skipped", "duration_min", "cpu_percent", "peak_memory_gb", "dragon_version",
             "details_url", "submitted_at")}
         common["run_status"] = row["status"]
         try:
@@ -759,7 +789,8 @@ class Monitor:
 
     def usage_rows(self, run):
         row = self.row(run)
-        common = {k: row[k] for k in ("run_id", "machine", "version", "slurm_job_id", "submitted_at")}
+        common = {k: row[k] for k in ("run_id", "machine", "version", "suite", "slurm_job_id",
+                                      "submitted_at")}
         return [common | item for item in self.job_usage(run).get("files", [])]
 
     def write_table(self, path, columns, rows_of):

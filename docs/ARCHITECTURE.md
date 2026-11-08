@@ -84,6 +84,7 @@ The `<machine>` name comes from `machine` in `site.toml`. The job script's contr
 | **One launcher per test file** | pytest writes results only at the end, and Dragon's exit code can't be trusted, so a hang must cost one file, not the run. |
 | **Classic rows with one section per machine** | They're known to work on public links, and classic rows can't nest. The newer dashboard layout is untested on public links. |
 | **Result markers in the data (`outcome`)** | Grafana field formatting doesn't reach nested tables. |
+| **CPU and GPU split through `[[run]]` entries and the `gpu` marker** | It needs no RHAPSODY change, works with released tags, and `-m "not gpu"` puts an unmarked test in the CPU job instead of in neither. Each run is tracked, published, and switched off separately. |
 | **No variables or dropdowns on the dashboard** | Public dashboards don't support them, so each machine's panels are generated. |
 
 ## Known limits
@@ -99,6 +100,8 @@ The `<machine>` name comes from `machine` in `site.toml`. The job script's contr
 - Only Stellar AI has run this, using the SSH schedule.
 - `test_mpi` times out on `v0.6.0` on Stellar AI. The cause hasn't been debugged.
 - The `v0.6.0` tests fail during setup on nodes without GPUs.
+- With CPU and GPU runs, a machine's card shows only the newest run, and "All machines by release" shows one cell per release.
+- A GPU test without `@pytest.mark.gpu` runs in the CPU job and fails there.
 - Job 16081's log link is broken, because its logs were never published.
 
 ## Changing the design

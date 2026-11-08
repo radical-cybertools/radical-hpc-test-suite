@@ -15,6 +15,10 @@ For why it's built this way, see [ARCHITECTURE.md](ARCHITECTURE.md).
 | **Results-only tick** | One extra tick about 2 minutes after a test job ends. It publishes that job's results, and never starts a job. |
 | **Release check** | One item on a scheduled tick's list: "Is the newest release on PyPI untested?" |
 | **Test job** | The real SLURM job that runs the test suite. It uses 2 nodes for up to 35 minutes, and only starts when a release check finds something new. |
+| **Run** | One `[[run]]` entry in a machine's `site.toml`: which job script to submit, and which tests to select. Most machines have one. |
+| **Suite** | A run's label on the dashboard, such as `CPU` or `GPU`. Empty on a machine with one run. |
+| **CPU and GPU split** | A machine with two runs: one job for tests without `@pytest.mark.gpu`, and one for tests with it. CPU testing then continues when GPU hours run out. |
+| **Switched-off run** | A run with `enabled = false`. Release checks skip it. When switched on again, it records the current release without running it, so it starts with the next new release. |
 | **Schedule** | The `scrontab` entry that starts scheduled ticks. On Stellar AI, `crontab` isn't allowed, so this is how ticks get started. |
 | **`scrontab` job** | The very short SLURM job the schedule starts. On Stellar AI, it only connects to the login node, where the tick runs. It sits in `squeue` as `hpc-grafana-tick`, usually `PENDING` while it waits for its next time. This is normal. |
 | **`sacct`** | SLURM's record of what happened to a job, including jobs it killed. The monitor trusts this for how a job ended. |
@@ -95,8 +99,10 @@ For one connected machine:
 | Scheduled ticks | About 0.5 | 2 | 06:00 on the 1st and 15th |
 | `scrontab` jobs | About 0.5 | 2 | One per scheduled tick, lasting seconds |
 | Release checks | About 0.5 | 2 | One per scheduled tick |
-| Test jobs | 0 to 0.5 | 0 to 2 | Only when a check finds a new release |
+| Test jobs | 0 to 0.5 | 0 to 2 | Only when a check finds a new release; one per switched-on run |
 | Results-only ticks | 0 to 0.5 | 0 to 2 | One per test job, about 2 minutes after it ends |
+
+The numbers above are for one run. A machine with CPU and GPU runs both switched on has twice the test jobs and results-only ticks, but the same scheduled ticks.
 
 - The gap between scheduled ticks is 13 to 17 days, because schedules use calendar dates.
 - A new release waits for the next scheduled tick. If two releases appear between ticks, only the newest gets tested.

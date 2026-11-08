@@ -22,6 +22,7 @@ import json
 import os
 import pathlib
 import re
+import shlex
 import shutil
 import signal
 import subprocess
@@ -33,6 +34,7 @@ TAIL_LINES = 100
 STOP_GRACE_SECONDS = 10
 CLEANUP_TIMEOUT_SECONDS = 120
 MIN_USEFUL_SECONDS = 60
+RESULTS_WAIT_SECONDS = 15
 CONTROL_CHARACTERS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f]")
 
 
@@ -50,6 +52,24 @@ def read_cases(path):
         return list(ET.parse(path).getroot().iter("testcase"))
     except (OSError, ET.ParseError):
         return None
+
+
+def wait_for_cases(path, seconds=RESULTS_WAIT_SECONDS):
+    """Read a JUnit file written on another node, allowing for shared file system delays.
+
+    pytest can write the file on a compute node just before the launcher returns, and this
+    node may not see it yet. Listing the directory makes the file system look again.
+    """
+    deadline = time.monotonic() + seconds
+    while True:
+        cases = read_cases(path)
+        if cases is not None or time.monotonic() >= deadline:
+            return cases
+        time.sleep(1)
+        try:
+            os.listdir(path.parent)
+        except OSError:
+            pass
 
 
 def read_live_results(path, name):
@@ -164,13 +184,15 @@ def run_file(test_file, launcher_args, budget, work_dir, env):
     live = work_dir / f"{name}.live.jsonl"
     junit.unlink(missing_ok=True)
     live.unlink(missing_ok=True)
+    # The monitor passes each [[run]]'s pytest_args, such as -m "not gpu", through the job.
+    pytest_args = shlex.split(env.get("HPC_MONITOR_PYTEST_ARGS", ""))
     command = ["dragon", *launcher_args, sys.executable, "-m", "pytest", str(test_file), "-v",
-               "-p", "pytest_live", f"--junitxml={junit}"]
+               *pytest_args, "-p", "pytest_live", f"--junitxml={junit}"]
     print(f"=== {name}: budget {budget} s", flush=True)
     start = time.monotonic()
     finished = run_limited(command, budget, log, work_dir, env | {
         "HPC_MONITOR_LIVE_RESULTS": str(live)})
-    cases = read_cases(junit)
+    cases = wait_for_cases(junit) if finished else read_cases(junit)
 
     # The launcher's exit code can't be used: dragon has returned 0 when the application
     # failed or was killed. Missing results are the reliable sign of a crash.

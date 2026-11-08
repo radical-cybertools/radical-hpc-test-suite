@@ -21,15 +21,15 @@ COLUMNS = (
     "run_id", "machine", "software", "version", "slurm_job_id", "status", "slurm_state",
     "failure_summary", "passed", "failed", "skipped", "duration_min", "nodes",
     "dragon_version", "submitted_at", "ended_at", "details_url", "last_reported",
-    "cpu_percent", "peak_memory_gb", "cpu_hours",
+    "cpu_percent", "peak_memory_gb", "cpu_hours", "suite", "run_label",
 )
 TEST_COLUMNS = (
-    "run_id", "machine", "version", "slurm_job_id", "run_status", "slurm_state", "passed",
+    "run_id", "machine", "version", "suite", "slurm_job_id", "run_status", "slurm_state", "passed",
     "failed", "skipped", "duration_min", "cpu_percent", "peak_memory_gb", "dragon_version", "test",
     "result", "outcome", "duration_s", "error", "details_url", "submitted_at",
 )
 USAGE_COLUMNS = (
-    "run_id", "machine", "version", "slurm_job_id", "test_file", "elapsed_s", "cpu_percent",
+    "run_id", "machine", "version", "suite", "slurm_job_id", "test_file", "elapsed_s", "cpu_percent",
     "peak_memory_gb", "submitted_at",
 )
 ALL_COLUMNS = {*COLUMNS, *TEST_COLUMNS, *USAGE_COLUMNS}
@@ -45,7 +45,7 @@ STATUS_MAP = [{"type": "value", "options": {
 COLOR_CELL = {"type": "color-background", "mode": "basic"}
 WRAP = {"type": "auto", "wrapText": True}
 CARD_WIDTH = 6
-CARD_HEIGHT = 13
+CARD_HEIGHT = 15
 
 
 def field_type(column):
@@ -131,6 +131,7 @@ def run_row_fields():
     """Columns of the expandable run rows. Two stay flexible, so the nested table gets full width."""
     return {"defaults": {"custom": {"filterable": True}}, "overrides": [
         override("version", ("custom.width", 90)),
+        override("suite", ("custom.width", 70)),
         override("slurm_job_id", ("displayName", "job"), ("custom.width", 90)),
         override("run_status", ("displayName", "status"), ("mappings", STATUS_MAP),
                  ("custom.width", 110), ("custom.cellOptions", COLOR_CELL)),
@@ -157,6 +158,7 @@ def table_fields(machine_names=()):
                  ("custom.width", 140)),
         override("failure_summary", ("displayName", "why it failed"), ("custom.cellOptions", WRAP)),
         override("version", ("custom.width", 100)),
+        override("suite", ("custom.width", 70)),
         override("slurm_job_id", ("displayName", "job"), ("custom.width", 100)),
         override("test_file", ("displayName", "test file"), ("custom.width", 200)),
         override("elapsed_s", ("displayName", "time (s)"), ("custom.width", 90)),
@@ -199,6 +201,15 @@ def machine_card(builder, name, source, x, y):
                          "overrides": []},
             options={"showHeader": False},
         ),
+        # Which run the status describes, such as "0.6.0 GPU", from the same newest run.
+        builder.panel(
+            "stat", "", x, y + 13, CARD_WIDTH, 2, [query], transformations=LATEST_RUN,
+            options={"reduceOptions": {"calcs": ["lastNotNull"], "fields": "/^run_label$/",
+                                       "values": False},
+                     "colorMode": "none", "graphMode": "none", "textMode": "value",
+                     "justifyMode": "center", "text": {"valueSize": 16}},
+            fieldConfig={"defaults": {"noValue": "-"}, "overrides": []},
+        ),
     ]
 
 
@@ -216,8 +227,8 @@ def tests_chart(builder, x, y, w, h, target):
     colors = (("passed", "green"), ("failed", "red"), ("skipped", "gray"))
     return builder.panel(
         "barchart", "Tests per release", x, y, w, h, [target],
-        transformations=[keep("version", "passed", "failed", "skipped")],
-        options={"xField": "version", "stacking": "normal", "showValue": "never",
+        transformations=[keep("run_label", "passed", "failed", "skipped")],
+        options={"xField": "run_label", "stacking": "normal", "showValue": "never",
                  "orientation": "vertical", "tooltip": {"mode": "multi"},
                  "legend": {"showLegend": True, "displayMode": "list", "placement": "bottom"}},
         fieldConfig={"defaults": {"custom": {"fillOpacity": 90, "lineWidth": 0}}, "overrides": [
@@ -233,7 +244,7 @@ def machine_details(builder, name, source, y):
     base = source.removesuffix(".csv")
     tests = builder.query("A", f"{base}-tests.csv", TEST_COLUMNS)
     usage = builder.query("A", f"{base}-usage.csv", USAGE_COLUMNS)
-    run_fields = ("submitted_at", "version", "slurm_job_id", "run_status", "slurm_state", "passed",
+    run_fields = ("submitted_at", "version", "suite", "slurm_job_id", "run_status", "slurm_state", "passed",
                   "failed", "skipped", "duration_min", "cpu_percent", "peak_memory_gb",
                   "dragon_version", "details_url")
     nested = {"id": "groupToNestedTable", "options": {
@@ -251,7 +262,7 @@ def machine_details(builder, name, source, y):
                       fieldConfig=run_row_fields()),
         tests_chart(builder, 0, y + 15, 10, 9, query),
         builder.panel("table", "Resources per test file, newest run first", 10, y + 15, 14, 9, [usage],
-                      transformations=[keep("slurm_job_id", "test_file", "elapsed_s",
+                      transformations=[keep("suite", "slurm_job_id", "test_file", "elapsed_s",
                                             "cpu_percent", "peak_memory_gb")],
                       fieldConfig=table_fields()),
     ]
@@ -287,7 +298,7 @@ def build(machines, planned, datasource, uid, title):
             {"id": "filterByValue", "options": {"type": "include", "match": "any", "filters": [
                 {"fieldName": "status", "config": {"id": "equal", "options": {"value": "FAILED"}}}]}},
             newest_first(),
-            keep("machine", "version", "slurm_job_id", "failure_summary", "details_url"),
+            keep("machine", "version", "suite", "slurm_job_id", "failure_summary", "details_url"),
         ],
         fieldConfig=table_fields(machine_names),
     ))

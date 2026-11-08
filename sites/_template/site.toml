@@ -15,3 +15,8 @@ name = "rhapsody-dragon"
 package = "rhapsody-py"
 job_script = "dragon_suite.sbatch"
 extra_packages = ["pytest", "pytest-asyncio", "mpi4py"]
+# To run CPU and GPU tests as separate jobs, see "Separate CPU and GPU jobs" in
+# docs/adding-a-machine.md. These optional settings go in each [[run]]:
+#   suite = "CPU"                    # label on the dashboard
+#   pytest_args = ["-m", "not gpu"]  # passed to pytest
+#   enabled = false                  # stop release checks starting this run

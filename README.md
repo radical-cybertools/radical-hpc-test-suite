@@ -100,7 +100,7 @@ Each machine owns its sbatch script. The monitor depends only on this:
 
 | Direction | Contract |
 |---|---|
-| Monitor sets | `HPC_MONITOR_RUN_DIR`, `HPC_MONITOR_VENV`, `HPC_MONITOR_SOURCE_DIR`, `HPC_MONITOR_VERSION`, `HPC_MONITOR_REPO_DIR`, `HPC_MONITOR_SITE_FILE`, `HPC_MONITOR_PYTHON` |
+| Monitor sets | `HPC_MONITOR_RUN_DIR`, `HPC_MONITOR_VENV`, `HPC_MONITOR_SOURCE_DIR`, `HPC_MONITOR_VERSION`, `HPC_MONITOR_REPO_DIR`, `HPC_MONITOR_SITE_FILE`, `HPC_MONITOR_PYTHON`, `HPC_MONITOR_PYTEST_ARGS` (read by `run_groups.py`) |
 | Monitor overrides | `--job-name` and `--output`, on the `sbatch` command line |
 | Script must | Write `$HPC_MONITOR_RUN_DIR/junit.xml` |
 | Script should | Set `HPC_MONITOR_LOGIN_HOST`, and run `jobs/publish_after_job.sh` from a `trap` when it ends |

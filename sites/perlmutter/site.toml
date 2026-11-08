@@ -15,8 +15,22 @@ ssh_key = "~/.hpc-monitor-grafana/deploy_key"
 public_url = "https://github.com/radical-cybertools/radical-hpc-test-suite/tree/results"
 branch = "results"
 
+# CPU and GPU tests run as separate jobs, so CPU testing continues when GPU hours run out.
+# A test is a GPU test if it carries @pytest.mark.gpu.
+
 [[run]]
-name = "rhapsody-dragon"
+name = "rhapsody-dragon"  # keeps its original name, so 0.6.0 stays marked as tested
+suite = "CPU"
 package = "rhapsody-py"
-job_script = "dragon_suite_cpu.sbatch"  # back to dragon_suite.sbatch once GPU hours return
+job_script = "dragon_suite_cpu.sbatch"
+pytest_args = ["-m", "not gpu"]
+extra_packages = ["pytest", "pytest-asyncio", "mpi4py"]
+
+[[run]]
+name = "rhapsody-dragon-gpu"
+suite = "GPU"
+enabled = false  # no GPU hours now; when switched on, it starts with the next new release
+package = "rhapsody-py"
+job_script = "dragon_suite.sbatch"
+pytest_args = ["-m", "gpu"]
 extra_packages = ["pytest", "pytest-asyncio", "mpi4py"]
