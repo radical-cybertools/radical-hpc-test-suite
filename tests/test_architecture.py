@@ -1,6 +1,7 @@
 """Checks for the design rules in docs/ARCHITECTURE.md that a test can enforce."""
 
 import ast
+import getpass
 import importlib.util
 import pathlib
 import re
@@ -9,11 +10,14 @@ import tomllib
 import unittest
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
+USER = getpass.getuser()
 MONITOR_CODE = [REPO / "hpc_monitor.py", *sorted((REPO / "jobs").glob("*.py")),
                 *sorted((REPO / "dashboard").glob("*.py"))]
 SECRET = re.compile(
     r"BEGIN [A-Z ]*PRIVATE KEY|\bglc_\w+|\bglsa_\w+|\bghp_\w+|\bgithub_pat_\w+|"
-    r"\w+\.grafana\.net|/home/\w+|/Users/\w+|(?i:\b(?:password|passwd|secret|api[_-]?key|token)\s*=\s*[\"']?\w{12,})")
+    # Home and scratch layouts: generic, NERSC, Delta (/u/<user>), and Bridges-2 (/jet/home/<user>)
+    r"\w+\.grafana\.net|/home/\w+|/Users/\w+|/global/(?:homes|u\d+)/\w/\w+|"
+    r"/pscratch/sd/\w/\w+|(?<![\w.])/u/\w+|/jet/home/\w+|(?i:\b(?:password|passwd|secret|api[_-]?key|token)\s*=\s*[\"']?\w{12,})")
 
 
 def load(path):
@@ -88,7 +92,11 @@ class Sites(unittest.TestCase):
         for path in paths:
             if path.is_file():
                 with self.subTest(path=str(path.relative_to(REPO))):
-                    self.assertIsNone(SECRET.search(path.read_text(errors="replace")))
+                    text = path.read_text(errors="replace")
+                    self.assertIsNone(SECRET.search(text))
+                    # Whoever runs the tests: catches any machine's paths, whatever their layout.
+                    if len(USER) >= 3:
+                        self.assertIsNone(re.search(rf"\b{re.escape(USER)}\b", text))
 
 
 class Docs(unittest.TestCase):
