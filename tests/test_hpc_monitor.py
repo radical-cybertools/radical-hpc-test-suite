@@ -549,6 +549,17 @@ pypi_url = "file://{self.pypi}"
         rows, clone = self.published("machine-s")
         self.assertEqual((rows[-1]["suite"], rows[-1]["run_label"]), ("GPU", "0.6.0 GPU"))
 
+    def test_runs_from_before_a_split_keep_an_empty_suite(self):
+        self.split_site(gpu_enabled=False)
+        self.assertEqual(self.run_named("one", "0.6.0"), 0)
+        state_file = self.tmp / "state" / "machine-s" / "state.json"
+        state = json.loads(state_file.read_text())
+        del state["runs"][0]["suite"]
+        state_file.write_text(json.dumps(state))
+        self.tick()
+        rows, _ = self.published("machine-s")
+        self.assertEqual((rows[-1]["suite"], rows[-1]["run_label"]), ("", "0.6.0"))
+
     def test_single_run_machines_have_an_empty_suite(self):
         self.assertEqual(self.run_version(), 0)
         rows, _ = self.published()

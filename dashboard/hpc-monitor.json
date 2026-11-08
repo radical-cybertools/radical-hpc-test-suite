@@ -148,6 +148,16 @@
        "selector": "cpu_hours",
        "text": "cpu_hours",
        "type": "number"
+      },
+      {
+       "selector": "suite",
+       "text": "suite",
+       "type": "string"
+      },
+      {
+       "selector": "run_label",
+       "text": "run_label",
+       "type": "string"
       }
      ],
      "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai.csv",
@@ -363,6 +373,16 @@
        "selector": "cpu_hours",
        "text": "cpu_hours",
        "type": "number"
+      },
+      {
+       "selector": "suite",
+       "text": "suite",
+       "type": "string"
+      },
+      {
+       "selector": "run_label",
+       "text": "run_label",
+       "type": "string"
       }
      ],
      "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai.csv",
@@ -395,32 +415,34 @@
      "id": "organize",
      "options": {
       "excludeByName": {
-       "dragon_version": true,
-       "run_id": true,
-       "machine": true,
-       "last_reported": true,
-       "failure_summary": true,
-       "duration_min": true,
+       "suite": true,
        "cpu_hours": true,
        "error": true,
+       "test_file": true,
        "duration_s": true,
+       "run_status": true,
+       "submitted_at": true,
+       "run_label": true,
+       "elapsed_s": true,
+       "slurm_state": true,
+       "details_url": true,
        "status": true,
+       "peak_memory_gb": true,
+       "duration_min": true,
+       "version": true,
+       "run_id": true,
+       "result": true,
+       "nodes": true,
+       "dragon_version": true,
+       "machine": true,
+       "outcome": true,
+       "test": true,
        "slurm_job_id": true,
        "ended_at": true,
-       "software": true,
-       "test_file": true,
-       "elapsed_s": true,
-       "outcome": true,
-       "submitted_at": true,
-       "nodes": true,
-       "details_url": true,
-       "peak_memory_gb": true,
-       "version": true,
-       "run_status": true,
-       "result": true,
+       "last_reported": true,
+       "failure_summary": true,
        "cpu_percent": true,
-       "test": true,
-       "slurm_state": true
+       "software": true
       },
       "indexByName": {
        "passed": 0,
@@ -636,6 +658,16 @@
        "selector": "cpu_hours",
        "text": "cpu_hours",
        "type": "number"
+      },
+      {
+       "selector": "suite",
+       "text": "suite",
+       "type": "string"
+      },
+      {
+       "selector": "run_label",
+       "text": "run_label",
+       "type": "string"
       }
      ],
      "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai.csv",
@@ -848,6 +880,16 @@
        "selector": "cpu_hours",
        "text": "cpu_hours",
        "type": "number"
+      },
+      {
+       "selector": "suite",
+       "text": "suite",
+       "type": "string"
+      },
+      {
+       "selector": "run_label",
+       "text": "run_label",
+       "type": "string"
       }
      ],
      "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai.csv",
@@ -880,34 +922,36 @@
      "id": "organize",
      "options": {
       "excludeByName": {
-       "dragon_version": true,
-       "run_id": true,
-       "machine": true,
-       "failure_summary": true,
-       "duration_min": true,
+       "suite": true,
        "cpu_hours": true,
        "error": true,
-       "duration_s": true,
-       "status": true,
-       "slurm_job_id": true,
-       "ended_at": true,
-       "software": true,
        "test_file": true,
-       "passed": true,
-       "skipped": true,
-       "elapsed_s": true,
-       "outcome": true,
-       "failed": true,
-       "submitted_at": true,
-       "nodes": true,
-       "details_url": true,
-       "peak_memory_gb": true,
-       "version": true,
+       "duration_s": true,
        "run_status": true,
+       "submitted_at": true,
+       "run_label": true,
+       "elapsed_s": true,
+       "slurm_state": true,
+       "details_url": true,
+       "failed": true,
+       "status": true,
+       "peak_memory_gb": true,
+       "duration_min": true,
+       "version": true,
+       "run_id": true,
        "result": true,
-       "cpu_percent": true,
+       "nodes": true,
+       "dragon_version": true,
+       "machine": true,
+       "outcome": true,
+       "skipped": true,
        "test": true,
-       "slurm_state": true
+       "slurm_job_id": true,
+       "passed": true,
+       "ended_at": true,
+       "failure_summary": true,
+       "cpu_percent": true,
+       "software": true
       },
       "indexByName": {
        "last_reported": 0
@@ -931,6 +975,200 @@
   },
   {
    "id": 6,
+   "type": "stat",
+   "title": "",
+   "datasource": {
+    "uid": "eg3hw0i7u8q2oa",
+    "type": "yesoreyeram-infinity-datasource"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 14,
+    "w": 6,
+    "h": 2
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "uid": "eg3hw0i7u8q2oa",
+      "type": "yesoreyeram-infinity-datasource"
+     },
+     "type": "csv",
+     "format": "table",
+     "parser": "backend",
+     "root_selector": "",
+     "filters": [],
+     "csv_options": {},
+     "columns": [
+      {
+       "selector": "run_id",
+       "text": "run_id",
+       "type": "string"
+      },
+      {
+       "selector": "machine",
+       "text": "machine",
+       "type": "string"
+      },
+      {
+       "selector": "software",
+       "text": "software",
+       "type": "string"
+      },
+      {
+       "selector": "version",
+       "text": "version",
+       "type": "string"
+      },
+      {
+       "selector": "slurm_job_id",
+       "text": "slurm_job_id",
+       "type": "string"
+      },
+      {
+       "selector": "status",
+       "text": "status",
+       "type": "string"
+      },
+      {
+       "selector": "slurm_state",
+       "text": "slurm_state",
+       "type": "string"
+      },
+      {
+       "selector": "failure_summary",
+       "text": "failure_summary",
+       "type": "string"
+      },
+      {
+       "selector": "passed",
+       "text": "passed",
+       "type": "number"
+      },
+      {
+       "selector": "failed",
+       "text": "failed",
+       "type": "number"
+      },
+      {
+       "selector": "skipped",
+       "text": "skipped",
+       "type": "number"
+      },
+      {
+       "selector": "duration_min",
+       "text": "duration_min",
+       "type": "number"
+      },
+      {
+       "selector": "nodes",
+       "text": "nodes",
+       "type": "string"
+      },
+      {
+       "selector": "dragon_version",
+       "text": "dragon_version",
+       "type": "string"
+      },
+      {
+       "selector": "submitted_at",
+       "text": "submitted_at",
+       "type": "timestamp"
+      },
+      {
+       "selector": "ended_at",
+       "text": "ended_at",
+       "type": "timestamp"
+      },
+      {
+       "selector": "details_url",
+       "text": "details_url",
+       "type": "string"
+      },
+      {
+       "selector": "last_reported",
+       "text": "last_reported",
+       "type": "timestamp"
+      },
+      {
+       "selector": "cpu_percent",
+       "text": "cpu_percent",
+       "type": "number"
+      },
+      {
+       "selector": "peak_memory_gb",
+       "text": "peak_memory_gb",
+       "type": "number"
+      },
+      {
+       "selector": "cpu_hours",
+       "text": "cpu_hours",
+       "type": "number"
+      },
+      {
+       "selector": "suite",
+       "text": "suite",
+       "type": "string"
+      },
+      {
+       "selector": "run_label",
+       "text": "run_label",
+       "type": "string"
+      }
+     ],
+     "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai.csv",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     },
+     "source": "url"
+    }
+   ],
+   "transformations": [
+    {
+     "id": "sortBy",
+     "options": {
+      "sort": [
+       {
+        "field": "submitted_at",
+        "desc": true
+       }
+      ]
+     }
+    },
+    {
+     "id": "limit",
+     "options": {
+      "limitField": 1
+     }
+    }
+   ],
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/^run_label$/",
+     "values": false
+    },
+    "colorMode": "none",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "text": {
+     "valueSize": 16
+    }
+   },
+   "fieldConfig": {
+    "defaults": {
+     "noValue": "-"
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 7,
    "type": "stat",
    "title": "NERSC",
    "datasource": {
@@ -1061,6 +1299,16 @@
        "selector": "cpu_hours",
        "text": "cpu_hours",
        "type": "number"
+      },
+      {
+       "selector": "suite",
+       "text": "suite",
+       "type": "string"
+      },
+      {
+       "selector": "run_label",
+       "text": "run_label",
+       "type": "string"
       }
      ],
      "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/perlmutter.csv",
@@ -1145,7 +1393,7 @@
    }
   },
   {
-   "id": 7,
+   "id": 8,
    "type": "piechart",
    "title": "",
    "datasource": {
@@ -1276,6 +1524,16 @@
        "selector": "cpu_hours",
        "text": "cpu_hours",
        "type": "number"
+      },
+      {
+       "selector": "suite",
+       "text": "suite",
+       "type": "string"
+      },
+      {
+       "selector": "run_label",
+       "text": "run_label",
+       "type": "string"
       }
      ],
      "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/perlmutter.csv",
@@ -1308,32 +1566,34 @@
      "id": "organize",
      "options": {
       "excludeByName": {
-       "dragon_version": true,
-       "run_id": true,
-       "machine": true,
-       "last_reported": true,
-       "failure_summary": true,
-       "duration_min": true,
+       "suite": true,
        "cpu_hours": true,
        "error": true,
+       "test_file": true,
        "duration_s": true,
+       "run_status": true,
+       "submitted_at": true,
+       "run_label": true,
+       "elapsed_s": true,
+       "slurm_state": true,
+       "details_url": true,
        "status": true,
+       "peak_memory_gb": true,
+       "duration_min": true,
+       "version": true,
+       "run_id": true,
+       "result": true,
+       "nodes": true,
+       "dragon_version": true,
+       "machine": true,
+       "outcome": true,
+       "test": true,
        "slurm_job_id": true,
        "ended_at": true,
-       "software": true,
-       "test_file": true,
-       "elapsed_s": true,
-       "outcome": true,
-       "submitted_at": true,
-       "nodes": true,
-       "details_url": true,
-       "peak_memory_gb": true,
-       "version": true,
-       "run_status": true,
-       "result": true,
+       "last_reported": true,
+       "failure_summary": true,
        "cpu_percent": true,
-       "test": true,
-       "slurm_state": true
+       "software": true
       },
       "indexByName": {
        "passed": 0,
@@ -1418,7 +1678,7 @@
    }
   },
   {
-   "id": 8,
+   "id": 9,
    "type": "stat",
    "title": "Latest run",
    "datasource": {
@@ -1549,6 +1809,16 @@
        "selector": "cpu_hours",
        "text": "cpu_hours",
        "type": "number"
+      },
+      {
+       "selector": "suite",
+       "text": "suite",
+       "type": "string"
+      },
+      {
+       "selector": "run_label",
+       "text": "run_label",
+       "type": "string"
       }
      ],
      "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/perlmutter.csv",
@@ -1630,7 +1900,7 @@
    }
   },
   {
-   "id": 9,
+   "id": 10,
    "type": "table",
    "title": "Last report",
    "datasource": {
@@ -1761,6 +2031,16 @@
        "selector": "cpu_hours",
        "text": "cpu_hours",
        "type": "number"
+      },
+      {
+       "selector": "suite",
+       "text": "suite",
+       "type": "string"
+      },
+      {
+       "selector": "run_label",
+       "text": "run_label",
+       "type": "string"
       }
      ],
      "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/perlmutter.csv",
@@ -1793,34 +2073,36 @@
      "id": "organize",
      "options": {
       "excludeByName": {
-       "dragon_version": true,
-       "run_id": true,
-       "machine": true,
-       "failure_summary": true,
-       "duration_min": true,
+       "suite": true,
        "cpu_hours": true,
        "error": true,
-       "duration_s": true,
-       "status": true,
-       "slurm_job_id": true,
-       "ended_at": true,
-       "software": true,
        "test_file": true,
-       "passed": true,
-       "skipped": true,
-       "elapsed_s": true,
-       "outcome": true,
-       "failed": true,
-       "submitted_at": true,
-       "nodes": true,
-       "details_url": true,
-       "peak_memory_gb": true,
-       "version": true,
+       "duration_s": true,
        "run_status": true,
+       "submitted_at": true,
+       "run_label": true,
+       "elapsed_s": true,
+       "slurm_state": true,
+       "details_url": true,
+       "failed": true,
+       "status": true,
+       "peak_memory_gb": true,
+       "duration_min": true,
+       "version": true,
+       "run_id": true,
        "result": true,
-       "cpu_percent": true,
+       "nodes": true,
+       "dragon_version": true,
+       "machine": true,
+       "outcome": true,
+       "skipped": true,
        "test": true,
-       "slurm_state": true
+       "slurm_job_id": true,
+       "passed": true,
+       "ended_at": true,
+       "failure_summary": true,
+       "cpu_percent": true,
+       "software": true
       },
       "indexByName": {
        "last_reported": 0
@@ -1843,14 +2125,208 @@
    }
   },
   {
-   "id": 10,
+   "id": 11,
+   "type": "stat",
+   "title": "",
+   "datasource": {
+    "uid": "eg3hw0i7u8q2oa",
+    "type": "yesoreyeram-infinity-datasource"
+   },
+   "gridPos": {
+    "x": 6,
+    "y": 14,
+    "w": 6,
+    "h": 2
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "uid": "eg3hw0i7u8q2oa",
+      "type": "yesoreyeram-infinity-datasource"
+     },
+     "type": "csv",
+     "format": "table",
+     "parser": "backend",
+     "root_selector": "",
+     "filters": [],
+     "csv_options": {},
+     "columns": [
+      {
+       "selector": "run_id",
+       "text": "run_id",
+       "type": "string"
+      },
+      {
+       "selector": "machine",
+       "text": "machine",
+       "type": "string"
+      },
+      {
+       "selector": "software",
+       "text": "software",
+       "type": "string"
+      },
+      {
+       "selector": "version",
+       "text": "version",
+       "type": "string"
+      },
+      {
+       "selector": "slurm_job_id",
+       "text": "slurm_job_id",
+       "type": "string"
+      },
+      {
+       "selector": "status",
+       "text": "status",
+       "type": "string"
+      },
+      {
+       "selector": "slurm_state",
+       "text": "slurm_state",
+       "type": "string"
+      },
+      {
+       "selector": "failure_summary",
+       "text": "failure_summary",
+       "type": "string"
+      },
+      {
+       "selector": "passed",
+       "text": "passed",
+       "type": "number"
+      },
+      {
+       "selector": "failed",
+       "text": "failed",
+       "type": "number"
+      },
+      {
+       "selector": "skipped",
+       "text": "skipped",
+       "type": "number"
+      },
+      {
+       "selector": "duration_min",
+       "text": "duration_min",
+       "type": "number"
+      },
+      {
+       "selector": "nodes",
+       "text": "nodes",
+       "type": "string"
+      },
+      {
+       "selector": "dragon_version",
+       "text": "dragon_version",
+       "type": "string"
+      },
+      {
+       "selector": "submitted_at",
+       "text": "submitted_at",
+       "type": "timestamp"
+      },
+      {
+       "selector": "ended_at",
+       "text": "ended_at",
+       "type": "timestamp"
+      },
+      {
+       "selector": "details_url",
+       "text": "details_url",
+       "type": "string"
+      },
+      {
+       "selector": "last_reported",
+       "text": "last_reported",
+       "type": "timestamp"
+      },
+      {
+       "selector": "cpu_percent",
+       "text": "cpu_percent",
+       "type": "number"
+      },
+      {
+       "selector": "peak_memory_gb",
+       "text": "peak_memory_gb",
+       "type": "number"
+      },
+      {
+       "selector": "cpu_hours",
+       "text": "cpu_hours",
+       "type": "number"
+      },
+      {
+       "selector": "suite",
+       "text": "suite",
+       "type": "string"
+      },
+      {
+       "selector": "run_label",
+       "text": "run_label",
+       "type": "string"
+      }
+     ],
+     "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/perlmutter.csv",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     },
+     "source": "url"
+    }
+   ],
+   "transformations": [
+    {
+     "id": "sortBy",
+     "options": {
+      "sort": [
+       {
+        "field": "submitted_at",
+        "desc": true
+       }
+      ]
+     }
+    },
+    {
+     "id": "limit",
+     "options": {
+      "limitField": 1
+     }
+    }
+   ],
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/^run_label$/",
+     "values": false
+    },
+    "colorMode": "none",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "text": {
+     "valueSize": 16
+    }
+   },
+   "fieldConfig": {
+    "defaults": {
+     "noValue": "-"
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 12,
    "type": "text",
    "title": "Delta",
    "gridPos": {
     "x": 12,
     "y": 1,
     "w": 6,
-    "h": 13
+    "h": 15
    },
    "options": {
     "mode": "html",
@@ -1858,14 +2334,14 @@
    }
   },
   {
-   "id": 11,
+   "id": 13,
    "type": "text",
    "title": "Bridges-2",
    "gridPos": {
     "x": 18,
     "y": 1,
     "w": 6,
-    "h": 13
+    "h": 15
    },
    "options": {
     "mode": "html",
@@ -1873,7 +2349,7 @@
    }
   },
   {
-   "id": 12,
+   "id": 14,
    "type": "table",
    "title": "Failures on all machines, newest first",
    "datasource": {
@@ -1882,7 +2358,7 @@
    },
    "gridPos": {
     "x": 0,
-    "y": 14,
+    "y": 16,
     "w": 24,
     "h": 7
    },
@@ -2004,6 +2480,16 @@
        "selector": "cpu_hours",
        "text": "cpu_hours",
        "type": "number"
+      },
+      {
+       "selector": "suite",
+       "text": "suite",
+       "type": "string"
+      },
+      {
+       "selector": "run_label",
+       "text": "run_label",
+       "type": "string"
       }
      ],
      "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai.csv",
@@ -2130,6 +2616,16 @@
        "selector": "cpu_hours",
        "text": "cpu_hours",
        "type": "number"
+      },
+      {
+       "selector": "suite",
+       "text": "suite",
+       "type": "string"
+      },
+      {
+       "selector": "run_label",
+       "text": "run_label",
+       "type": "string"
       }
      ],
      "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/perlmutter.csv",
@@ -2178,37 +2674,39 @@
      "id": "organize",
      "options": {
       "excludeByName": {
-       "dragon_version": true,
-       "run_id": true,
-       "last_reported": true,
-       "duration_min": true,
        "cpu_hours": true,
        "error": true,
-       "duration_s": true,
-       "status": true,
-       "ended_at": true,
-       "software": true,
        "test_file": true,
-       "passed": true,
-       "skipped": true,
-       "elapsed_s": true,
-       "outcome": true,
-       "failed": true,
-       "submitted_at": true,
-       "nodes": true,
-       "peak_memory_gb": true,
+       "duration_s": true,
        "run_status": true,
+       "submitted_at": true,
+       "run_label": true,
+       "elapsed_s": true,
+       "slurm_state": true,
+       "failed": true,
+       "status": true,
+       "peak_memory_gb": true,
+       "duration_min": true,
+       "run_id": true,
        "result": true,
-       "cpu_percent": true,
+       "nodes": true,
+       "dragon_version": true,
+       "outcome": true,
+       "skipped": true,
        "test": true,
-       "slurm_state": true
+       "passed": true,
+       "ended_at": true,
+       "last_reported": true,
+       "cpu_percent": true,
+       "software": true
       },
       "indexByName": {
        "machine": 0,
        "version": 1,
-       "slurm_job_id": 2,
-       "failure_summary": 3,
-       "details_url": 4
+       "suite": 2,
+       "slurm_job_id": 3,
+       "failure_summary": 4,
+       "details_url": 5
       },
       "renameByName": {}
      }
@@ -2279,6 +2777,18 @@
        {
         "id": "custom.width",
         "value": 100
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "suite"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 70
        }
       ]
      },
@@ -2430,20 +2940,20 @@
    }
   },
   {
-   "id": 13,
+   "id": 15,
    "type": "row",
    "title": "StellarAI",
    "collapsed": false,
    "gridPos": {
     "x": 0,
-    "y": 21,
+    "y": 23,
     "w": 24,
     "h": 1
    },
    "panels": []
   },
   {
-   "id": 14,
+   "id": 16,
    "type": "table",
    "title": "Runs, newest first: click the arrow to see every test",
    "datasource": {
@@ -2452,7 +2962,7 @@
    },
    "gridPos": {
     "x": 0,
-    "y": 22,
+    "y": 24,
     "w": 24,
     "h": 14
    },
@@ -2483,6 +2993,11 @@
       {
        "selector": "version",
        "text": "version",
+       "type": "string"
+      },
+      {
+       "selector": "suite",
+       "text": "suite",
        "type": "string"
       },
       {
@@ -2584,37 +3099,39 @@
      "id": "organize",
      "options": {
       "excludeByName": {
+       "cpu_hours": true,
+       "test_file": true,
+       "run_label": true,
+       "elapsed_s": true,
+       "status": true,
        "run_id": true,
+       "result": true,
+       "nodes": true,
        "machine": true,
+       "ended_at": true,
        "last_reported": true,
        "failure_summary": true,
-       "cpu_hours": true,
-       "status": true,
-       "ended_at": true,
-       "software": true,
-       "test_file": true,
-       "elapsed_s": true,
-       "nodes": true,
-       "result": true
+       "software": true
       },
       "indexByName": {
        "submitted_at": 0,
        "version": 1,
-       "slurm_job_id": 2,
-       "run_status": 3,
-       "slurm_state": 4,
-       "passed": 5,
-       "failed": 6,
-       "skipped": 7,
-       "duration_min": 8,
-       "cpu_percent": 9,
-       "peak_memory_gb": 10,
-       "dragon_version": 11,
-       "details_url": 12,
-       "outcome": 13,
-       "test": 14,
-       "duration_s": 15,
-       "error": 16
+       "suite": 2,
+       "slurm_job_id": 3,
+       "run_status": 4,
+       "slurm_state": 5,
+       "passed": 6,
+       "failed": 7,
+       "skipped": 8,
+       "duration_min": 9,
+       "cpu_percent": 10,
+       "peak_memory_gb": 11,
+       "dragon_version": 12,
+       "details_url": 13,
+       "outcome": 14,
+       "test": 15,
+       "duration_s": 16,
+       "error": 17
       },
       "renameByName": {
        "outcome": "test result",
@@ -2632,6 +3149,10 @@
         "operation": "groupby"
        },
        "version": {
+        "aggregations": [],
+        "operation": "groupby"
+       },
+       "suite": {
         "aggregations": [],
         "operation": "groupby"
        },
@@ -2699,6 +3220,18 @@
        {
         "id": "custom.width",
         "value": 90
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "suite"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 70
        }
       ]
      },
@@ -2949,7 +3482,7 @@
    }
   },
   {
-   "id": 15,
+   "id": 17,
    "type": "barchart",
    "title": "Tests per release",
    "datasource": {
@@ -2958,7 +3491,7 @@
    },
    "gridPos": {
     "x": 0,
-    "y": 36,
+    "y": 38,
     "w": 10,
     "h": 9
    },
@@ -3080,6 +3613,16 @@
        "selector": "cpu_hours",
        "text": "cpu_hours",
        "type": "number"
+      },
+      {
+       "selector": "suite",
+       "text": "suite",
+       "type": "string"
+      },
+      {
+       "selector": "run_label",
+       "text": "run_label",
+       "type": "string"
       }
      ],
      "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai.csv",
@@ -3095,34 +3638,36 @@
      "id": "organize",
      "options": {
       "excludeByName": {
-       "dragon_version": true,
-       "run_id": true,
-       "machine": true,
-       "last_reported": true,
-       "failure_summary": true,
-       "duration_min": true,
+       "suite": true,
        "cpu_hours": true,
        "error": true,
+       "test_file": true,
        "duration_s": true,
+       "run_status": true,
+       "submitted_at": true,
+       "elapsed_s": true,
+       "slurm_state": true,
+       "details_url": true,
        "status": true,
+       "peak_memory_gb": true,
+       "duration_min": true,
+       "version": true,
+       "run_id": true,
+       "result": true,
+       "nodes": true,
+       "dragon_version": true,
+       "machine": true,
+       "outcome": true,
+       "test": true,
        "slurm_job_id": true,
        "ended_at": true,
-       "software": true,
-       "test_file": true,
-       "elapsed_s": true,
-       "outcome": true,
-       "submitted_at": true,
-       "nodes": true,
-       "details_url": true,
-       "peak_memory_gb": true,
-       "run_status": true,
-       "result": true,
+       "last_reported": true,
+       "failure_summary": true,
        "cpu_percent": true,
-       "test": true,
-       "slurm_state": true
+       "software": true
       },
       "indexByName": {
-       "version": 0,
+       "run_label": 0,
        "passed": 1,
        "failed": 2,
        "skipped": 3
@@ -3132,7 +3677,7 @@
     }
    ],
    "options": {
-    "xField": "version",
+    "xField": "run_label",
     "stacking": "normal",
     "showValue": "never",
     "orientation": "vertical",
@@ -3202,7 +3747,7 @@
    }
   },
   {
-   "id": 16,
+   "id": 18,
    "type": "table",
    "title": "Resources per test file, newest run first",
    "datasource": {
@@ -3211,7 +3756,7 @@
    },
    "gridPos": {
     "x": 10,
-    "y": 36,
+    "y": 38,
     "w": 14,
     "h": 9
    },
@@ -3242,6 +3787,11 @@
       {
        "selector": "version",
        "text": "version",
+       "type": "string"
+      },
+      {
+       "selector": "suite",
+       "text": "suite",
        "type": "string"
       },
       {
@@ -3288,37 +3838,39 @@
      "id": "organize",
      "options": {
       "excludeByName": {
-       "dragon_version": true,
-       "run_id": true,
-       "machine": true,
-       "last_reported": true,
-       "failure_summary": true,
-       "duration_min": true,
        "cpu_hours": true,
        "error": true,
        "duration_s": true,
-       "status": true,
-       "ended_at": true,
-       "software": true,
-       "passed": true,
-       "skipped": true,
-       "outcome": true,
-       "failed": true,
-       "submitted_at": true,
-       "nodes": true,
-       "details_url": true,
-       "version": true,
        "run_status": true,
+       "submitted_at": true,
+       "run_label": true,
+       "slurm_state": true,
+       "details_url": true,
+       "failed": true,
+       "status": true,
+       "duration_min": true,
+       "version": true,
+       "run_id": true,
        "result": true,
+       "nodes": true,
+       "dragon_version": true,
+       "machine": true,
+       "outcome": true,
+       "skipped": true,
        "test": true,
-       "slurm_state": true
+       "passed": true,
+       "ended_at": true,
+       "last_reported": true,
+       "failure_summary": true,
+       "software": true
       },
       "indexByName": {
-       "slurm_job_id": 0,
-       "test_file": 1,
-       "elapsed_s": 2,
-       "cpu_percent": 3,
-       "peak_memory_gb": 4
+       "suite": 0,
+       "slurm_job_id": 1,
+       "test_file": 2,
+       "elapsed_s": 3,
+       "cpu_percent": 4,
+       "peak_memory_gb": 5
       },
       "renameByName": {}
      }
@@ -3380,6 +3932,18 @@
        {
         "id": "custom.width",
         "value": 100
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "suite"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 70
        }
       ]
      },
@@ -3531,20 +4095,20 @@
    }
   },
   {
-   "id": 17,
+   "id": 19,
    "type": "row",
    "title": "NERSC",
    "collapsed": false,
    "gridPos": {
     "x": 0,
-    "y": 45,
+    "y": 47,
     "w": 24,
     "h": 1
    },
    "panels": []
   },
   {
-   "id": 18,
+   "id": 20,
    "type": "table",
    "title": "Runs, newest first: click the arrow to see every test",
    "datasource": {
@@ -3553,7 +4117,7 @@
    },
    "gridPos": {
     "x": 0,
-    "y": 46,
+    "y": 48,
     "w": 24,
     "h": 14
    },
@@ -3584,6 +4148,11 @@
       {
        "selector": "version",
        "text": "version",
+       "type": "string"
+      },
+      {
+       "selector": "suite",
+       "text": "suite",
        "type": "string"
       },
       {
@@ -3685,37 +4254,39 @@
      "id": "organize",
      "options": {
       "excludeByName": {
+       "cpu_hours": true,
+       "test_file": true,
+       "run_label": true,
+       "elapsed_s": true,
+       "status": true,
        "run_id": true,
+       "result": true,
+       "nodes": true,
        "machine": true,
+       "ended_at": true,
        "last_reported": true,
        "failure_summary": true,
-       "cpu_hours": true,
-       "status": true,
-       "ended_at": true,
-       "software": true,
-       "test_file": true,
-       "elapsed_s": true,
-       "nodes": true,
-       "result": true
+       "software": true
       },
       "indexByName": {
        "submitted_at": 0,
        "version": 1,
-       "slurm_job_id": 2,
-       "run_status": 3,
-       "slurm_state": 4,
-       "passed": 5,
-       "failed": 6,
-       "skipped": 7,
-       "duration_min": 8,
-       "cpu_percent": 9,
-       "peak_memory_gb": 10,
-       "dragon_version": 11,
-       "details_url": 12,
-       "outcome": 13,
-       "test": 14,
-       "duration_s": 15,
-       "error": 16
+       "suite": 2,
+       "slurm_job_id": 3,
+       "run_status": 4,
+       "slurm_state": 5,
+       "passed": 6,
+       "failed": 7,
+       "skipped": 8,
+       "duration_min": 9,
+       "cpu_percent": 10,
+       "peak_memory_gb": 11,
+       "dragon_version": 12,
+       "details_url": 13,
+       "outcome": 14,
+       "test": 15,
+       "duration_s": 16,
+       "error": 17
       },
       "renameByName": {
        "outcome": "test result",
@@ -3733,6 +4304,10 @@
         "operation": "groupby"
        },
        "version": {
+        "aggregations": [],
+        "operation": "groupby"
+       },
+       "suite": {
         "aggregations": [],
         "operation": "groupby"
        },
@@ -3800,6 +4375,18 @@
        {
         "id": "custom.width",
         "value": 90
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "suite"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 70
        }
       ]
      },
@@ -4050,7 +4637,7 @@
    }
   },
   {
-   "id": 19,
+   "id": 21,
    "type": "barchart",
    "title": "Tests per release",
    "datasource": {
@@ -4059,7 +4646,7 @@
    },
    "gridPos": {
     "x": 0,
-    "y": 60,
+    "y": 62,
     "w": 10,
     "h": 9
    },
@@ -4181,6 +4768,16 @@
        "selector": "cpu_hours",
        "text": "cpu_hours",
        "type": "number"
+      },
+      {
+       "selector": "suite",
+       "text": "suite",
+       "type": "string"
+      },
+      {
+       "selector": "run_label",
+       "text": "run_label",
+       "type": "string"
       }
      ],
      "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/perlmutter.csv",
@@ -4196,34 +4793,36 @@
      "id": "organize",
      "options": {
       "excludeByName": {
-       "dragon_version": true,
-       "run_id": true,
-       "machine": true,
-       "last_reported": true,
-       "failure_summary": true,
-       "duration_min": true,
+       "suite": true,
        "cpu_hours": true,
        "error": true,
+       "test_file": true,
        "duration_s": true,
+       "run_status": true,
+       "submitted_at": true,
+       "elapsed_s": true,
+       "slurm_state": true,
+       "details_url": true,
        "status": true,
+       "peak_memory_gb": true,
+       "duration_min": true,
+       "version": true,
+       "run_id": true,
+       "result": true,
+       "nodes": true,
+       "dragon_version": true,
+       "machine": true,
+       "outcome": true,
+       "test": true,
        "slurm_job_id": true,
        "ended_at": true,
-       "software": true,
-       "test_file": true,
-       "elapsed_s": true,
-       "outcome": true,
-       "submitted_at": true,
-       "nodes": true,
-       "details_url": true,
-       "peak_memory_gb": true,
-       "run_status": true,
-       "result": true,
+       "last_reported": true,
+       "failure_summary": true,
        "cpu_percent": true,
-       "test": true,
-       "slurm_state": true
+       "software": true
       },
       "indexByName": {
-       "version": 0,
+       "run_label": 0,
        "passed": 1,
        "failed": 2,
        "skipped": 3
@@ -4233,7 +4832,7 @@
     }
    ],
    "options": {
-    "xField": "version",
+    "xField": "run_label",
     "stacking": "normal",
     "showValue": "never",
     "orientation": "vertical",
@@ -4303,7 +4902,7 @@
    }
   },
   {
-   "id": 20,
+   "id": 22,
    "type": "table",
    "title": "Resources per test file, newest run first",
    "datasource": {
@@ -4312,7 +4911,7 @@
    },
    "gridPos": {
     "x": 10,
-    "y": 60,
+    "y": 62,
     "w": 14,
     "h": 9
    },
@@ -4343,6 +4942,11 @@
       {
        "selector": "version",
        "text": "version",
+       "type": "string"
+      },
+      {
+       "selector": "suite",
+       "text": "suite",
        "type": "string"
       },
       {
@@ -4389,37 +4993,39 @@
      "id": "organize",
      "options": {
       "excludeByName": {
-       "dragon_version": true,
-       "run_id": true,
-       "machine": true,
-       "last_reported": true,
-       "failure_summary": true,
-       "duration_min": true,
        "cpu_hours": true,
        "error": true,
        "duration_s": true,
-       "status": true,
-       "ended_at": true,
-       "software": true,
-       "passed": true,
-       "skipped": true,
-       "outcome": true,
-       "failed": true,
-       "submitted_at": true,
-       "nodes": true,
-       "details_url": true,
-       "version": true,
        "run_status": true,
+       "submitted_at": true,
+       "run_label": true,
+       "slurm_state": true,
+       "details_url": true,
+       "failed": true,
+       "status": true,
+       "duration_min": true,
+       "version": true,
+       "run_id": true,
        "result": true,
+       "nodes": true,
+       "dragon_version": true,
+       "machine": true,
+       "outcome": true,
+       "skipped": true,
        "test": true,
-       "slurm_state": true
+       "passed": true,
+       "ended_at": true,
+       "last_reported": true,
+       "failure_summary": true,
+       "software": true
       },
       "indexByName": {
-       "slurm_job_id": 0,
-       "test_file": 1,
-       "elapsed_s": 2,
-       "cpu_percent": 3,
-       "peak_memory_gb": 4
+       "suite": 0,
+       "slurm_job_id": 1,
+       "test_file": 2,
+       "elapsed_s": 3,
+       "cpu_percent": 4,
+       "peak_memory_gb": 5
       },
       "renameByName": {}
      }
@@ -4481,6 +5087,18 @@
        {
         "id": "custom.width",
         "value": 100
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "suite"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 70
        }
       ]
      },
@@ -4632,19 +5250,19 @@
    }
   },
   {
-   "id": 22,
+   "id": 24,
    "type": "row",
    "title": "All machines by release",
    "collapsed": true,
    "gridPos": {
     "x": 0,
-    "y": 69,
+    "y": 71,
     "w": 24,
     "h": 1
    },
    "panels": [
     {
-     "id": 21,
+     "id": 23,
      "type": "table",
      "title": "Status of each release on each machine",
      "datasource": {
@@ -4653,7 +5271,7 @@
      },
      "gridPos": {
       "x": 0,
-      "y": 70,
+      "y": 72,
       "w": 24,
       "h": 6
      },
@@ -4775,6 +5393,16 @@
          "selector": "cpu_hours",
          "text": "cpu_hours",
          "type": "number"
+        },
+        {
+         "selector": "suite",
+         "text": "suite",
+         "type": "string"
+        },
+        {
+         "selector": "run_label",
+         "text": "run_label",
+         "type": "string"
         }
        ],
        "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/stellar-ai.csv",
@@ -4901,6 +5529,16 @@
          "selector": "cpu_hours",
          "text": "cpu_hours",
          "type": "number"
+        },
+        {
+         "selector": "suite",
+         "text": "suite",
+         "type": "string"
+        },
+        {
+         "selector": "run_label",
+         "text": "run_label",
+         "type": "string"
         }
        ],
        "url": "https://raw.githubusercontent.com/radical-cybertools/radical-hpc-test-suite/results/data/perlmutter.csv",

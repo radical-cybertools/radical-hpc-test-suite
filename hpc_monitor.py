@@ -405,9 +405,11 @@ class Monitor:
                 return spec
         raise RuntimeError(f"run {run['name']!r} is no longer in site.toml")
 
-    def suite(self, run):
-        """The run's dashboard label, or empty if its [[run]] has none or is gone."""
-        return next((s["suite"] for s in self.config["run"] if s["name"] == run["name"]), "")
+    @staticmethod
+    def suite(run):
+        """The suite the run was started with. Runs from before suites existed have none, so
+        a later split can't relabel a run that tested everything."""
+        return run.get("suite", "")
 
     def open_runs(self):
         return [r for r in self.state["runs"] if r["stage"] != "closed"]
@@ -493,7 +495,8 @@ class Monitor:
         run_id = re.sub(r"[^\w.-]+", "-", f"{spec['name']}-{version}-{stamp}")
         run_dir = self.config["state_dir"] / "runs" / run_id
         run = {
-            "run_id": run_id, "name": spec["name"], "software": spec["software"],
+            "run_id": run_id, "name": spec["name"], "suite": spec["suite"],
+            "software": spec["software"],
             "version": version, "job_name": "hpcgraf-" + run_id, "stage": "submitting",
             "created_at": created, "run_dir": str(run_dir), "job_id": None, "versions": {},
         }
