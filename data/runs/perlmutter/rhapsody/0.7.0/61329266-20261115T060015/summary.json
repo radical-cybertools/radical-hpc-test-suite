@@ -1,0 +1,44 @@
+{
+ "run_id": "rhapsody-dragon-0.7.0-20261115T060015",
+ "software": "rhapsody",
+ "version": "0.7.0",
+ "job_id": "61329266",
+ "versions": {
+  "dragonhpc": "0.15.0",
+  "source commit": "ace1cd9dbfd6"
+ },
+ "job": {
+  "state": "COMPLETED",
+  "raw_state": "COMPLETED",
+  "exit_code": "0:0",
+  "elapsed": "00:13:50",
+  "start": "2026-11-14T22:29:28",
+  "end": "2026-11-14T22:43:18",
+  "nodes": "nid[005365,006620]",
+  "reason": "None",
+  "kind": "finished"
+ },
+ "setup_error": null,
+ "machine": "perlmutter",
+ "verdict": {
+  "ok": false,
+  "reason": "2 of 12 tests failed",
+  "passed": 10,
+  "failed": 2,
+  "skipped": 0,
+  "failed_tests": [
+   {
+    "name": "test_scale.launcher",
+    "output": "test_scale exceeded its budget of 300 s\ntest_scale exceeded its budget of 300 s\n\nLog (end):\n============================= test session starts ==============================\nplatform linux -- Python 3.12.12, pytest-9.2.0, pluggy-1.7.0 -- ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.7.0-20261115T060015/venv/bin/python3\ncachedir: .pytest_cache\nrootdir: ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.7.0-20261115T060015/source/tests/integration/test-hpc/dragon\nconfigfile: pytest.ini\nplugins: asyncio-1.5.0, typeguard-4.6.0\nasyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=module, asyncio_default_test_loop_scope=module\ncollecting ... collected 4 items\n\n../source/tests/integration/test-hpc/dragon/test_scale.py::test_10k_function_tasks \n-------------------------------- live log setup --------------------------------\nINFO     api_setup:api_setup.py:325 connecting to infrastructure from 2090684\nINFO     api_setup:api_setup.py:363 debug entry hooked\nPASSED                                                                   [ 25%]\n../source/tests/integration/test-hpc/dragon/test_scale.py::test_1k_executable_tasks PASSED [ 50%]\n../source/tests/integration/test-hpc/dragon/test_scale.py::test_mixed_function_and_executable_tasks PASSED [ 75%]\n../source/tests/integration/test-hpc/dragon/test_scale.py::test_wave_submission_stability Detected an abnormal exit. Will attempt to clean up Dragon resources...\nConnect Unhandled exception: <class 'paramiko.ssh_exception.SSHException'> No authentication methods available\nConnect Unhandled exception: <class 'paramiko.ssh_exception.SSHException'> No authentication methods available\nNo authentication methods available",
+    "message": "test_scale exceeded its budget of 300 s"
+   },
+   {
+    "name": "test_mpi.launcher",
+    "output": "test_mpi exceeded its budget of 300 s\ntest_mpi exceeded its budget of 300 s\n\nLog (end):\nDetected an abnormal exit. Will attempt to clean up Dragon resources...\nConnect Unhandled exception: <class 'paramiko.ssh_exception.SSHException'> No authentication methods available\nConnect Unhandled exception: <class 'paramiko.ssh_exception.SSHException'> No authentication methods available\nNo authentication methods available",
+    "message": "test_mpi exceeded its budget of 300 s"
+   }
+  ],
+  "skipped_tests": [],
+  "summary": "2 of 12 tests failed; test_scale.launcher: test_scale exceeded its budget of 300 s; and 1 more"
+ }
+}

@@ -1,0 +1,4 @@
+Detected an abnormal exit. Will attempt to clean up Dragon resources...
+Connect Unhandled exception: <class 'paramiko.ssh_exception.SSHException'> No authentication methods available
+Connect Unhandled exception: <class 'paramiko.ssh_exception.SSHException'> No authentication methods available
+No authentication methods available

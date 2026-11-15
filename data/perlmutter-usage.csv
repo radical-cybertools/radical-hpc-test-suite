@@ -1,4 +1,8 @@
 run_id,machine,version,suite,slurm_job_id,test_file,elapsed_s,cpu_percent,peak_memory_gb,submitted_at
+rhapsody-dragon-0.7.0-20261115T060015,perlmutter,0.7.0,CPU,61329266,test_mpi,694.0,15.1,11.8,2026-11-15T06:00:15Z
+rhapsody-dragon-0.7.0-20261115T060015,perlmutter,0.7.0,CPU,61329266,test_placement,69.0,5.7,5.94,2026-11-15T06:00:15Z
+rhapsody-dragon-0.7.0-20261115T060015,perlmutter,0.7.0,CPU,61329266,test_scale,3.0,0.1,0.0,2026-11-15T06:00:15Z
+rhapsody-dragon-0.7.0-20261115T060015,perlmutter,0.7.0,CPU,61329266,test_tasks,85.0,10.5,5.68,2026-11-15T06:00:15Z
 rhapsody-dragon-0.6.0-20261107T212313,perlmutter,0.6.0,,60977034,test_mpi,15.0,0.2,0.0,2026-11-07T21:23:13Z
 rhapsody-dragon-0.6.0-20261107T212313,perlmutter,0.6.0,,60977034,test_multinode_gpu,21.0,0.2,0.0,2026-11-07T21:23:13Z
 rhapsody-dragon-0.6.0-20261107T212313,perlmutter,0.6.0,,60977034,test_pinning,16.0,0.2,0.0,2026-11-07T21:23:13Z

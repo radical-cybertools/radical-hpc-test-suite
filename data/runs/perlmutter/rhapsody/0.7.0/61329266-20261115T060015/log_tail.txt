@@ -1,0 +1,99 @@
+=== test_placement: budget 300 s
+============================= test session starts ==============================
+platform linux -- Python 3.12.12, pytest-9.2.0, pluggy-1.7.0 -- ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.7.0-20261115T060015/venv/bin/python3
+cachedir: .pytest_cache
+rootdir: ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.7.0-20261115T060015/source/tests/integration/test-hpc/dragon
+configfile: pytest.ini
+plugins: asyncio-1.5.0, typeguard-4.6.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=module, asyncio_default_test_loop_scope=module
+collecting ... collected 5 items / 3 deselected / 2 selected
+
+../source/tests/integration/test-hpc/dragon/test_placement.py::test_one_task_per_node 
+-------------------------------- live log setup --------------------------------
+INFO     api_setup:api_setup.py:325 connecting to infrastructure from 2089260
+INFO     api_setup:api_setup.py:363 debug entry hooked
+PASSED                                                                   [ 50%]
+../source/tests/integration/test-hpc/dragon/test_placement.py::test_exclusive_node_pinning PASSED [100%]
+
+- generated xml file: ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.7.0-20261115T060015/groups/test_placement.xml -
+======================= 2 passed, 3 deselected in 35.12s =======================
+=== test_placement: 77 s, 2 tests, launcher ok
+=== test_tasks: budget 300 s
+============================= test session starts ==============================
+platform linux -- Python 3.12.12, pytest-9.2.0, pluggy-1.7.0 -- ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.7.0-20261115T060015/venv/bin/python3
+cachedir: .pytest_cache
+rootdir: ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.7.0-20261115T060015/source/tests/integration/test-hpc/dragon
+configfile: pytest.ini
+plugins: asyncio-1.5.0, typeguard-4.6.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=module, asyncio_default_test_loop_scope=module
+collecting ... collected 4 items
+
+../source/tests/integration/test-hpc/dragon/test_tasks.py::test_function_return_value 
+-------------------------------- live log setup --------------------------------
+INFO     api_setup:api_setup.py:325 connecting to infrastructure from 2089942
+INFO     api_setup:api_setup.py:363 debug entry hooked
+PASSED                                                                   [ 25%]
+../source/tests/integration/test-hpc/dragon/test_tasks.py::test_multiple_function_tasks_return_correct_values PASSED [ 50%]
+../source/tests/integration/test-hpc/dragon/test_tasks.py::test_executable_echo_on_first_node PASSED [ 75%]
+../source/tests/integration/test-hpc/dragon/test_tasks.py::test_concurrent_submission_all_nodes PASSED [100%]
+
+- generated xml file: ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.7.0-20261115T060015/groups/test_tasks.xml -
+============================== 4 passed in 53.38s ==============================
+=== test_tasks: 90 s, 4 tests, launcher ok
+=== test_scale: budget 300 s
+============================= test session starts ==============================
+platform linux -- Python 3.12.12, pytest-9.2.0, pluggy-1.7.0 -- ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.7.0-20261115T060015/venv/bin/python3
+cachedir: .pytest_cache
+rootdir: ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.7.0-20261115T060015/source/tests/integration/test-hpc/dragon
+configfile: pytest.ini
+plugins: asyncio-1.5.0, typeguard-4.6.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=module, asyncio_default_test_loop_scope=module
+collecting ... collected 4 items
+
+../source/tests/integration/test-hpc/dragon/test_scale.py::test_10k_function_tasks 
+-------------------------------- live log setup --------------------------------
+INFO     api_setup:api_setup.py:325 connecting to infrastructure from 2090684
+INFO     api_setup:api_setup.py:363 debug entry hooked
+PASSED                                                                   [ 25%]
+../source/tests/integration/test-hpc/dragon/test_scale.py::test_1k_executable_tasks PASSED [ 50%]
+../source/tests/integration/test-hpc/dragon/test_scale.py::test_mixed_function_and_executable_tasks PASSED [ 75%]
+../source/tests/integration/test-hpc/dragon/test_scale.py::test_wave_submission_stability Detected an abnormal exit. Will attempt to clean up Dragon resources...
+Connect Unhandled exception: <class 'paramiko.ssh_exception.SSHException'> No authentication methods available
+Connect Unhandled exception: <class 'paramiko.ssh_exception.SSHException'> No authentication methods available
+No authentication methods available
+=== test_scale: 332 s, 4 tests, test_scale exceeded its budget of 300 s
+=== test_mpi: budget 300 s
+Detected an abnormal exit. Will attempt to clean up Dragon resources...
+Connect Unhandled exception: <class 'paramiko.ssh_exception.SSHException'> No authentication methods available
+Connect Unhandled exception: <class 'paramiko.ssh_exception.SSHException'> No authentication methods available
+No authentication methods available
+=== test_mpi: 316 s, 0 tests, test_mpi exceeded its budget of 300 s
+=== wrote ~/.hpc-monitor-grafana/perlmutter/runs/rhapsody-dragon-0.7.0-20261115T060015/junit.xml: 12 test results
+***************************************************************************
+                          NOTICE TO USERS
+
+Lawrence Berkeley National Laboratory operates this computer system under 
+contract to the U.S. Department of Energy.  This computer system is the 
+property of the United States Government and is for authorized use only.
+Users (authorized or unauthorized) have no explicit or implicit 
+expectation of privacy.
+
+Any or all uses of this system and all files on this system may be
+intercepted, monitored, recorded, copied, audited, inspected, and disclosed
+to authorized site, Department of Energy, and law enforcement personnel,
+as well as authorized officials of other agencies, both domestic and foreign.
+By using this system, the user consents to such interception, monitoring,
+recording, copying, auditing, inspection, and disclosure at the discretion
+of authorized site or Department of Energy personnel.
+
+Unauthorized or improper use of this system may result in administrative
+disciplinary action and civil and criminal penalties. By continuing to use
+this system you indicate your awareness of and consent to these terms and
+conditions of use. LOG OFF IMMEDIATELY if you do not agree to the conditions
+stated in this warning.
+
+*****************************************************************************
+
+Login connection to host x3116c0s9b0n0:
+
+publish_after_job: asked perlmutter.nersc.gov to publish in 120 s
