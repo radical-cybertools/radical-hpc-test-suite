@@ -1,0 +1,456 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuites><testsuite name="hpc" tests="12" failures="3" errors="0" skipped="0"><testcase classname="test_placement" name="test_one_task_per_node" time="3.708" /><testcase classname="test_placement" name="test_exclusive_node_pinning" time="0.572" /><testcase classname="test_placement" name="test_pin_to_specific_gpu" time="0.636" /><testcase classname="test_placement" name="test_one_task_per_gpu_node" time="0.563" /><testcase classname="test_placement" name="test_round_robin_gpu_across_nodes" time="2.247" /><testcase classname="test_tasks" name="test_function_return_value" time="2.876" /><testcase classname="test_tasks" name="test_multiple_function_tasks_return_correct_values" time="0.982" /><testcase classname="test_tasks" name="test_executable_echo_on_first_node" time="0.563" /><testcase classname="test_tasks" name="test_concurrent_submission_all_nodes" time="2.499" /><testcase classname="test_mpi" name="test_mpi_gather_single_node" time="0"><failure message="TimeoutError: Timeout after 120.0s: 0/1 tasks completed">fut = &lt;_GatheringFuture finished exception=CancelledError()&gt;, timeout = 120.0
+
+    async def wait_for(fut, timeout):
+        """Wait for the single Future or coroutine to complete, with timeout.
+    
+        Coroutine will be wrapped in Task.
+    
+        Returns result of the Future or coroutine.  When a timeout occurs,
+        it cancels the task and raises TimeoutError.  To avoid the task
+        cancellation, wrap it in shield().
+    
+        If the wait is cancelled, the task is also cancelled.
+    
+        If the task suppresses the cancellation and returns a value instead,
+        that value is returned.
+    
+        This function is a coroutine.
+        """
+        # The special case for timeout &lt;= 0 is for the following case:
+        #
+        # async def test_waitfor():
+        #     func_started = False
+        #
+        #     async def func():
+        #         nonlocal func_started
+        #         func_started = True
+        #
+        #     try:
+        #         await asyncio.wait_for(func(), 0)
+        #     except asyncio.TimeoutError:
+        #         assert not func_started
+        #     else:
+        #         assert False
+        #
+        # asyncio.run(test_waitfor())
+    
+    
+        if timeout is not None and timeout &lt;= 0:
+            fut = ensure_future(fut)
+    
+            if fut.done():
+                return fut.result()
+    
+            await _cancel_and_wait(fut)
+            try:
+                return fut.result()
+            except exceptions.CancelledError as exc:
+                raise TimeoutError from exc
+    
+        async with timeouts.timeout(timeout):
+&gt;           return await fut
+                   ^^^^^^^^^
+E           asyncio.exceptions.CancelledError
+
+/usr/lib64/python3.12/asyncio/tasks.py:520: CancelledError
+
+The above exception was the direct cause of the following exception:
+
+self = &lt;rhapsody.api.session.Session object at 0x15273efe1220&gt;
+tasks = [ComputeTask(uid='task.000001', backend='dragon', state='RUNNING', stdout=None, stderr=None, exit_code=None, return_va...y=[], gpu_env_str='', gpu_affinity=[], wait_mode=&lt;WaitMode.DEFAULT: 3&gt;, refcounted=True)})]}, task_type='ComputeTask')]
+timeout = 120.0
+
+    async def wait_tasks(
+        self,
+        tasks: list[dict | BaseTask],
+        timeout: float | None = None,
+    ) -&gt; list[dict | BaseTask]:
+        """Wait for tasks to reach a terminal state.
+    
+        Args:
+            tasks: List of tasks to wait for.
+            timeout: Maximum time to wait in seconds.
+    
+        Returns:
+            The list of completed task objects.
+    
+        Raises:
+            asyncio.TimeoutError: If timeout is reached.
+        """
+        if not tasks:
+            return []
+    
+        futures = []
+        for task in tasks:
+            uid = task["uid"]
+            futures.append(self._state_manager.get_wait_future(uid, task))
+    
+        # Wait for all futures; return_exceptions=True prevents task failures from
+        # propagating — callers inspect task.state / task.exception directly.
+        try:
+&gt;           await asyncio.wait_for(
+                asyncio.gather(*futures, return_exceptions=True), timeout=timeout
+            )
+
+../venv/lib64/python3.12/site-packages/rhapsody/api/session.py:297: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib64/python3.12/asyncio/tasks.py:519: in wait_for
+    async with timeouts.timeout(timeout):
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;Timeout [expired]&gt;
+exc_type = &lt;class 'asyncio.exceptions.CancelledError'&gt;
+exc_val = CancelledError(), exc_tb = &lt;traceback object at 0x15288aed69c0&gt;
+
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -&gt; Optional[bool]:
+        assert self._state in (_State.ENTERED, _State.EXPIRING)
+    
+        if self._timeout_handler is not None:
+            self._timeout_handler.cancel()
+            self._timeout_handler = None
+    
+        if self._state is _State.EXPIRING:
+            self._state = _State.EXPIRED
+    
+            if self._task.uncancel() &lt;= self._cancelling and exc_type is exceptions.CancelledError:
+                # Since there are no new cancel requests, we're
+                # handling this.
+&gt;               raise TimeoutError from exc_val
+E               TimeoutError
+
+/usr/lib64/python3.12/asyncio/timeouts.py:115: TimeoutError
+
+During handling of the above exception, another exception occurred:
+
+rhapsody_session = &lt;rhapsody.api.session.Session object at 0x15273efe1220&gt;
+topology = [{'huid': 1181566458486706571, 'hostname': 'sai-n02g3', 'gpus': [0, 1, 2, 3, 4, 5, ...], 'num_gpus': 8}, {'huid': 3075987638640887445, 'hostname': 'sai-n02g1', 'gpus': [0, 1, 2, 3, 4, 5, ...], 'num_gpus': 8}]
+
+    @pytest.mark.mpi
+    @pytest.mark.asyncio
+    async def test_mpi_gather_single_node(rhapsody_session, topology):
+        """2-rank MPI job on one node: gather hostnames to rank 0."""
+        from dragon.infrastructure.policy import Policy
+    
+        from rhapsody.api import ComputeTask
+    
+        node = topology[0]
+        ranks = 2
+    
+        task = ComputeTask(
+            function=_mpi_gather_hostnames,
+            task_backend_specific_kwargs={
+                "process_templates": [
+                    (
+                        ranks,
+                        {
+                            "policy": Policy(
+                                placement=Policy.Placement.HOST_NAME,
+                                host_name=node["hostname"],
+                            )
+                        },
+                    )
+                ]
+            },
+        )
+    
+        await rhapsody_session.submit_tasks([task])
+&gt;       await rhapsody_session.wait_tasks([task], timeout=120.0)
+
+../source/tests/integration/test-hpc/dragon/test_mpi.py:69: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;rhapsody.api.session.Session object at 0x15273efe1220&gt;
+tasks = [ComputeTask(uid='task.000001', backend='dragon', state='RUNNING', stdout=None, stderr=None, exit_code=None, return_va...y=[], gpu_env_str='', gpu_affinity=[], wait_mode=&lt;WaitMode.DEFAULT: 3&gt;, refcounted=True)})]}, task_type='ComputeTask')]
+timeout = 120.0
+
+    async def wait_tasks(
+        self,
+        tasks: list[dict | BaseTask],
+        timeout: float | None = None,
+    ) -&gt; list[dict | BaseTask]:
+        """Wait for tasks to reach a terminal state.
+    
+        Args:
+            tasks: List of tasks to wait for.
+            timeout: Maximum time to wait in seconds.
+    
+        Returns:
+            The list of completed task objects.
+    
+        Raises:
+            asyncio.TimeoutError: If timeout is reached.
+        """
+        if not tasks:
+            return []
+    
+        futures = []
+        for task in tasks:
+            uid = task["uid"]
+            futures.append(self._state_manager.get_wait_future(uid, task))
+    
+        # Wait for all futures; return_exceptions=True prevents task failures from
+        # propagating — callers inspect task.state / task.exception directly.
+        try:
+            await asyncio.wait_for(
+                asyncio.gather(*futures, return_exceptions=True), timeout=timeout
+            )
+        except asyncio.TimeoutError:
+            # Check how many finished
+            finished = sum(
+                1 for t in tasks if t.get("state") in self._state_manager._terminal_states
+            )
+&gt;           raise asyncio.TimeoutError(
+                f"Timeout after {timeout}s: {finished}/{len(tasks)} tasks completed"
+            )
+E           TimeoutError: Timeout after 120.0s: 0/1 tasks completed
+
+../venv/lib64/python3.12/site-packages/rhapsody/api/session.py:305: TimeoutError</failure></testcase><testcase classname="test_mpi" name="test_mpi_allreduce_single_node" time="0"><failure message="TimeoutError: Timeout after 120.0s: 0/1 tasks completed">fut = &lt;_GatheringFuture finished exception=CancelledError()&gt;, timeout = 120.0
+
+    async def wait_for(fut, timeout):
+        """Wait for the single Future or coroutine to complete, with timeout.
+    
+        Coroutine will be wrapped in Task.
+    
+        Returns result of the Future or coroutine.  When a timeout occurs,
+        it cancels the task and raises TimeoutError.  To avoid the task
+        cancellation, wrap it in shield().
+    
+        If the wait is cancelled, the task is also cancelled.
+    
+        If the task suppresses the cancellation and returns a value instead,
+        that value is returned.
+    
+        This function is a coroutine.
+        """
+        # The special case for timeout &lt;= 0 is for the following case:
+        #
+        # async def test_waitfor():
+        #     func_started = False
+        #
+        #     async def func():
+        #         nonlocal func_started
+        #         func_started = True
+        #
+        #     try:
+        #         await asyncio.wait_for(func(), 0)
+        #     except asyncio.TimeoutError:
+        #         assert not func_started
+        #     else:
+        #         assert False
+        #
+        # asyncio.run(test_waitfor())
+    
+    
+        if timeout is not None and timeout &lt;= 0:
+            fut = ensure_future(fut)
+    
+            if fut.done():
+                return fut.result()
+    
+            await _cancel_and_wait(fut)
+            try:
+                return fut.result()
+            except exceptions.CancelledError as exc:
+                raise TimeoutError from exc
+    
+        async with timeouts.timeout(timeout):
+&gt;           return await fut
+                   ^^^^^^^^^
+E           asyncio.exceptions.CancelledError
+
+/usr/lib64/python3.12/asyncio/tasks.py:520: CancelledError
+
+The above exception was the direct cause of the following exception:
+
+self = &lt;rhapsody.api.session.Session object at 0x15273efe1220&gt;
+tasks = [ComputeTask(uid='task.000002', backend='dragon', state='RUNNING', stdout=None, stderr=None, exit_code=None, return_va...y=[], gpu_env_str='', gpu_affinity=[], wait_mode=&lt;WaitMode.DEFAULT: 3&gt;, refcounted=True)})]}, task_type='ComputeTask')]
+timeout = 120.0
+
+    async def wait_tasks(
+        self,
+        tasks: list[dict | BaseTask],
+        timeout: float | None = None,
+    ) -&gt; list[dict | BaseTask]:
+        """Wait for tasks to reach a terminal state.
+    
+        Args:
+            tasks: List of tasks to wait for.
+            timeout: Maximum time to wait in seconds.
+    
+        Returns:
+            The list of completed task objects.
+    
+        Raises:
+            asyncio.TimeoutError: If timeout is reached.
+        """
+        if not tasks:
+            return []
+    
+        futures = []
+        for task in tasks:
+            uid = task["uid"]
+            futures.append(self._state_manager.get_wait_future(uid, task))
+    
+        # Wait for all futures; return_exceptions=True prevents task failures from
+        # propagating — callers inspect task.state / task.exception directly.
+        try:
+&gt;           await asyncio.wait_for(
+                asyncio.gather(*futures, return_exceptions=True), timeout=timeout
+            )
+
+../venv/lib64/python3.12/site-packages/rhapsody/api/session.py:297: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib64/python3.12/asyncio/tasks.py:519: in wait_for
+    async with timeouts.timeout(timeout):
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;Timeout [expired]&gt;
+exc_type = &lt;class 'asyncio.exceptions.CancelledError'&gt;
+exc_val = CancelledError(), exc_tb = &lt;traceback object at 0x15288ada2e80&gt;
+
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -&gt; Optional[bool]:
+        assert self._state in (_State.ENTERED, _State.EXPIRING)
+    
+        if self._timeout_handler is not None:
+            self._timeout_handler.cancel()
+            self._timeout_handler = None
+    
+        if self._state is _State.EXPIRING:
+            self._state = _State.EXPIRED
+    
+            if self._task.uncancel() &lt;= self._cancelling and exc_type is exceptions.CancelledError:
+                # Since there are no new cancel requests, we're
+                # handling this.
+&gt;               raise TimeoutError from exc_val
+E               TimeoutError
+
+/usr/lib64/python3.12/asyncio/timeouts.py:115: TimeoutError
+
+During handling of the above exception, another exception occurred:
+
+rhapsody_session = &lt;rhapsody.api.session.Session object at 0x15273efe1220&gt;
+topology = [{'huid': 1181566458486706571, 'hostname': 'sai-n02g3', 'gpus': [0, 1, 2, 3, 4, 5, ...], 'num_gpus': 8}, {'huid': 3075987638640887445, 'hostname': 'sai-n02g1', 'gpus': [0, 1, 2, 3, 4, 5, ...], 'num_gpus': 8}]
+
+    @pytest.mark.mpi
+    @pytest.mark.asyncio
+    async def test_mpi_allreduce_single_node(rhapsody_session, topology):
+        """4-rank MPI allreduce on one node: sum must equal ranks * input value."""
+        from dragon.infrastructure.policy import Policy
+    
+        from rhapsody.api import ComputeTask
+    
+        node = topology[0]
+        ranks = 4
+        input_val = 7
+    
+        task = ComputeTask(
+            function=_mpi_allreduce_sum,
+            args=(input_val,),
+            task_backend_specific_kwargs={
+                "process_templates": [
+                    (
+                        ranks,
+                        {
+                            "policy": Policy(
+                                placement=Policy.Placement.HOST_NAME,
+                                host_name=node["hostname"],
+                            )
+                        },
+                    )
+                ]
+            },
+        )
+    
+        await rhapsody_session.submit_tasks([task])
+&gt;       await rhapsody_session.wait_tasks([task], timeout=120.0)
+
+../source/tests/integration/test-hpc/dragon/test_mpi.py:112: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;rhapsody.api.session.Session object at 0x15273efe1220&gt;
+tasks = [ComputeTask(uid='task.000002', backend='dragon', state='RUNNING', stdout=None, stderr=None, exit_code=None, return_va...y=[], gpu_env_str='', gpu_affinity=[], wait_mode=&lt;WaitMode.DEFAULT: 3&gt;, refcounted=True)})]}, task_type='ComputeTask')]
+timeout = 120.0
+
+    async def wait_tasks(
+        self,
+        tasks: list[dict | BaseTask],
+        timeout: float | None = None,
+    ) -&gt; list[dict | BaseTask]:
+        """Wait for tasks to reach a terminal state.
+    
+        Args:
+            tasks: List of tasks to wait for.
+            timeout: Maximum time to wait in seconds.
+    
+        Returns:
+            The list of completed task objects.
+    
+        Raises:
+            asyncio.TimeoutError: If timeout is reached.
+        """
+        if not tasks:
+            return []
+    
+        futures = []
+        for task in tasks:
+            uid = task["uid"]
+            futures.append(self._state_manager.get_wait_future(uid, task))
+    
+        # Wait for all futures; return_exceptions=True prevents task failures from
+        # propagating — callers inspect task.state / task.exception directly.
+        try:
+            await asyncio.wait_for(
+                asyncio.gather(*futures, return_exceptions=True), timeout=timeout
+            )
+        except asyncio.TimeoutError:
+            # Check how many finished
+            finished = sum(
+                1 for t in tasks if t.get("state") in self._state_manager._terminal_states
+            )
+&gt;           raise asyncio.TimeoutError(
+                f"Timeout after {timeout}s: {finished}/{len(tasks)} tasks completed"
+            )
+E           TimeoutError: Timeout after 120.0s: 0/1 tasks completed
+
+../venv/lib64/python3.12/site-packages/rhapsody/api/session.py:305: TimeoutError</failure></testcase><testcase classname="test_mpi" name="launcher" time="0"><failure message="test_mpi exceeded its budget of 300 s; test_mpi_broadcast_single_node was still running">test_mpi exceeded its budget of 300 s; test_mpi_broadcast_single_node was still running
+
+Log (end):
+============================= test session starts ==============================
+platform linux -- Python 3.12.15, pytest-9.2.0, pluggy-1.7.0 -- ~/.hpc-monitor-grafana/stellar-ai/runs/rhapsody-dragon-0.7.0-20261115T110018/venv/bin/python3
+cachedir: .pytest_cache
+rootdir: ~/.hpc-monitor-grafana/stellar-ai/runs/rhapsody-dragon-0.7.0-20261115T110018/source/tests/integration/test-hpc/dragon
+configfile: pytest.ini
+plugins: typeguard-4.6.0, asyncio-1.5.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=module, asyncio_default_test_loop_scope=module
+collecting ... collected 6 items
+
+../source/tests/integration/test-hpc/dragon/test_mpi.py::test_mpi_gather_single_node 
+-------------------------------- live log setup --------------------------------
+INFO     api_setup:api_setup.py:325 connecting to infrastructure from 1812562
+INFO     api_setup:api_setup.py:363 debug entry hooked
+FAILED                                                                   [ 16%]
+../source/tests/integration/test-hpc/dragon/test_mpi.py::test_mpi_allreduce_single_node FAILED [ 33%]
+../source/tests/integration/test-hpc/dragon/test_mpi.py::test_mpi_broadcast_single_node Detected an abnormal exit. Will attempt to clean up Dragon resources...
+Connect Unhandled exception: &lt;class 'paramiko.ssh_exception.SSHException'&gt; No authentication methods available
+Connect Unhandled exception: &lt;class 'paramiko.ssh_exception.SSHException'&gt; No authentication methods available
+No authentication methods available
+No authentication methods available
+[2026-11-15T06:07:06.309] error: *** STEP 40063.7 ON sai-n02g1 CANCELLED AT 2026-11-15T06:07:06 DUE to SIGNAL Killed ***
+srun: Job step aborted: Waiting up to 47 seconds for job step to finish.
+srun: error: sai-n02g1: task 0: Killed
+srun: Terminating StepId=40063.7
+[2026-11-15T06:07:07.356] error:  mpi/pmix_v5: _errhandler: sai-n02g3 [1]: pmixp_client_v2.c:225: Error handler invoked: status = -61, source = [slurm.pmix.40063.7:1]
+srun: error: sai-n02g3: task 1: Killed</failure></testcase></testsuite></testsuites>

@@ -1,0 +1,90 @@
+Loading openmpi/gcc/5.0.10
+  Loading requirement: hpcx-latest/hpcx-stack
+=== test_placement: budget 300 s
+============================= test session starts ==============================
+platform linux -- Python 3.12.15, pytest-9.2.0, pluggy-1.7.0 -- ~/.hpc-monitor-grafana/stellar-ai/runs/rhapsody-dragon-0.7.0-20261115T110018/venv/bin/python3
+cachedir: .pytest_cache
+rootdir: ~/.hpc-monitor-grafana/stellar-ai/runs/rhapsody-dragon-0.7.0-20261115T110018/source/tests/integration/test-hpc/dragon
+configfile: pytest.ini
+plugins: typeguard-4.6.0, asyncio-1.5.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=module, asyncio_default_test_loop_scope=module
+collecting ... collected 5 items
+
+../source/tests/integration/test-hpc/dragon/test_placement.py::test_one_task_per_node 
+-------------------------------- live log setup --------------------------------
+INFO     api_setup:api_setup.py:325 connecting to infrastructure from 1811702
+INFO     api_setup:api_setup.py:363 debug entry hooked
+PASSED                                                                   [ 20%]
+../source/tests/integration/test-hpc/dragon/test_placement.py::test_exclusive_node_pinning PASSED [ 40%]
+../source/tests/integration/test-hpc/dragon/test_placement.py::test_pin_to_specific_gpu PASSED [ 60%]
+../source/tests/integration/test-hpc/dragon/test_placement.py::test_one_task_per_gpu_node PASSED [ 80%]
+../source/tests/integration/test-hpc/dragon/test_placement.py::test_round_robin_gpu_across_nodes PASSED [100%]
+
+- generated xml file: ~/.hpc-monitor-grafana/stellar-ai/runs/rhapsody-dragon-0.7.0-20261115T110018/groups/test_placement.xml -
+============================== 5 passed in 7.76s ===============================
+=== test_placement: 25 s, 5 tests, launcher ok
+=== test_tasks: budget 300 s
+============================= test session starts ==============================
+platform linux -- Python 3.12.15, pytest-9.2.0, pluggy-1.7.0 -- ~/.hpc-monitor-grafana/stellar-ai/runs/rhapsody-dragon-0.7.0-20261115T110018/venv/bin/python3
+cachedir: .pytest_cache
+rootdir: ~/.hpc-monitor-grafana/stellar-ai/runs/rhapsody-dragon-0.7.0-20261115T110018/source/tests/integration/test-hpc/dragon
+configfile: pytest.ini
+plugins: typeguard-4.6.0, asyncio-1.5.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=module, asyncio_default_test_loop_scope=module
+collecting ... collected 4 items
+
+../source/tests/integration/test-hpc/dragon/test_tasks.py::test_function_return_value 
+-------------------------------- live log setup --------------------------------
+INFO     api_setup:api_setup.py:325 connecting to infrastructure from 1812049
+INFO     api_setup:api_setup.py:363 debug entry hooked
+PASSED                                                                   [ 25%]
+../source/tests/integration/test-hpc/dragon/test_tasks.py::test_multiple_function_tasks_return_correct_values PASSED [ 50%]
+../source/tests/integration/test-hpc/dragon/test_tasks.py::test_executable_echo_on_first_node PASSED [ 75%]
+../source/tests/integration/test-hpc/dragon/test_tasks.py::test_concurrent_submission_all_nodes PASSED [100%]
+
+- generated xml file: ~/.hpc-monitor-grafana/stellar-ai/runs/rhapsody-dragon-0.7.0-20261115T110018/groups/test_tasks.xml -
+============================== 4 passed in 6.95s ===============================
+=== test_tasks: 23 s, 4 tests, launcher ok
+=== test_scale: budget 300 s
+============================= test session starts ==============================
+platform linux -- Python 3.12.15, pytest-9.2.0, pluggy-1.7.0 -- ~/.hpc-monitor-grafana/stellar-ai/runs/rhapsody-dragon-0.7.0-20261115T110018/venv/bin/python3
+cachedir: .pytest_cache
+rootdir: ~/.hpc-monitor-grafana/stellar-ai/runs/rhapsody-dragon-0.7.0-20261115T110018/source/tests/integration/test-hpc/dragon
+configfile: pytest.ini
+plugins: typeguard-4.6.0, asyncio-1.5.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=module, asyncio_default_test_loop_scope=module
+collecting ... collected 4 items / 4 deselected / 0 selected
+
+- generated xml file: ~/.hpc-monitor-grafana/stellar-ai/runs/rhapsody-dragon-0.7.0-20261115T110018/groups/test_scale.xml -
+============================ 4 deselected in 0.02s =============================
+=== test_scale: 17 s, 0 tests, launcher ok
+=== test_mpi: budget 300 s
+============================= test session starts ==============================
+platform linux -- Python 3.12.15, pytest-9.2.0, pluggy-1.7.0 -- ~/.hpc-monitor-grafana/stellar-ai/runs/rhapsody-dragon-0.7.0-20261115T110018/venv/bin/python3
+cachedir: .pytest_cache
+rootdir: ~/.hpc-monitor-grafana/stellar-ai/runs/rhapsody-dragon-0.7.0-20261115T110018/source/tests/integration/test-hpc/dragon
+configfile: pytest.ini
+plugins: typeguard-4.6.0, asyncio-1.5.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=module, asyncio_default_test_loop_scope=module
+collecting ... collected 6 items
+
+../source/tests/integration/test-hpc/dragon/test_mpi.py::test_mpi_gather_single_node 
+-------------------------------- live log setup --------------------------------
+INFO     api_setup:api_setup.py:325 connecting to infrastructure from 1812562
+INFO     api_setup:api_setup.py:363 debug entry hooked
+FAILED                                                                   [ 16%]
+../source/tests/integration/test-hpc/dragon/test_mpi.py::test_mpi_allreduce_single_node FAILED [ 33%]
+../source/tests/integration/test-hpc/dragon/test_mpi.py::test_mpi_broadcast_single_node Detected an abnormal exit. Will attempt to clean up Dragon resources...
+Connect Unhandled exception: <class 'paramiko.ssh_exception.SSHException'> No authentication methods available
+Connect Unhandled exception: <class 'paramiko.ssh_exception.SSHException'> No authentication methods available
+No authentication methods available
+No authentication methods available
+[2026-11-15T06:07:06.309] error: *** STEP 40063.7 ON sai-n02g1 CANCELLED AT 2026-11-15T06:07:06 DUE to SIGNAL Killed ***
+srun: Job step aborted: Waiting up to 47 seconds for job step to finish.
+srun: error: sai-n02g1: task 0: Killed
+srun: Terminating StepId=40063.7
+[2026-11-15T06:07:07.356] error:  mpi/pmix_v5: _errhandler: sai-n02g3 [1]: pmixp_client_v2.c:225: Error handler invoked: status = -61, source = [slurm.pmix.40063.7:1]
+srun: error: sai-n02g3: task 1: Killed
+=== test_mpi: 315 s, 2 tests, test_mpi exceeded its budget of 300 s; test_mpi_broadcast_single_node was still running
+=== wrote ~/.hpc-monitor-grafana/stellar-ai/runs/rhapsody-dragon-0.7.0-20261115T110018/junit.xml: 12 test results
+publish_after_job: asked stellarai-amd to publish in 120 s

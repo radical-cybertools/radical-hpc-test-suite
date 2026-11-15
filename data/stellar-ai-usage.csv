@@ -1,4 +1,8 @@
 run_id,machine,version,suite,slurm_job_id,test_file,elapsed_s,cpu_percent,peak_memory_gb,submitted_at
+rhapsody-dragon-0.7.0-20261115T110018,stellar-ai,0.7.0,,40063,test_mpi,311.0,40.9,8.01,2026-11-15T11:00:18Z
+rhapsody-dragon-0.7.0-20261115T110018,stellar-ai,0.7.0,,40063,test_placement,23.0,11.1,2.93,2026-11-15T11:00:18Z
+rhapsody-dragon-0.7.0-20261115T110018,stellar-ai,0.7.0,,40063,test_scale,15.0,0.6,0.34,2026-11-15T11:00:18Z
+rhapsody-dragon-0.7.0-20261115T110018,stellar-ai,0.7.0,,40063,test_tasks,21.0,8.4,2.91,2026-11-15T11:00:18Z
 rhapsody-dragon-0.6.0-20261106T165335,stellar-ai,0.6.0,,16081,test_mpi,310.0,48.6,7.09,2026-11-06T16:53:35Z
 rhapsody-dragon-0.6.0-20261106T165335,stellar-ai,0.6.0,,16081,test_multinode_gpu,19.0,5.3,1.87,2026-11-06T16:53:35Z
 rhapsody-dragon-0.6.0-20261106T165335,stellar-ai,0.6.0,,16081,test_pinning,21.0,8.3,2.14,2026-11-06T16:53:35Z
